@@ -24,6 +24,10 @@ namespace Z1Torrent {
         public string CreatedBy { get; internal set; }
         public List<ITracker> Trackers { get; internal set; }
 
+        public int PieceLength { get; internal set; }
+        public List<Piece> Pieces { get; internal set; }
+        public List<File> Files { get; internal set; }
+
         private TorrentClient _client;
 
         private List<Peer> _peers = new List<Peer>();
@@ -31,7 +35,7 @@ namespace Z1Torrent {
         public static Metafile FromFile(TorrentClient client, string path) {
             if (path == null) throw new ArgumentNullException(nameof(path));
 
-            var metafileData = File.ReadAllBytes(path);
+            var metafileData = System.IO.File.ReadAllBytes(path);
 
             var reader = new BencodeReader(metafileData);
             var rootItem = reader.Read();
@@ -102,6 +106,20 @@ namespace Z1Torrent {
                 // Invalid torrent, missing fields
                 throw new InvalidDataException("Missing piece information");
             }
+            if (piecesRaw.Length % 20 != 0) {
+                // piece string must be a multiple of 20 bytes (SHA1 hash)
+                throw new InvalidDataException("Invalid piece data");
+            }
+            var pieceStream = new MemoryStream(piecesRaw);
+            var pieceHash = new byte[20];
+            var pieces = new List<Piece>();
+            while (pieceStream.Position < piecesRaw.Length) {
+                pieceStream.Read(pieceHash, 0, 20);
+                pieces.Add(new Piece(pieceHash));
+            }
+
+            newMetafile.PieceLength = pieceLength;
+            newMetafile.Pieces = pieces;
 
             // Get optional private value
             var priv = info.Get<BencodeInteger>("private");
@@ -110,6 +128,50 @@ namespace Z1Torrent {
             } else {
                 newMetafile.Private = true;
             }
+
+            // Get file information
+            var files = new List<File>();
+
+            var filesList = info.Get<BencodeList>("files");
+            if (filesList == null) {
+                // Single file mode
+                var fileName = info.Get<BencodeByteString>("name");
+                var fileSize = info.Get<BencodeInteger>("length");
+                if (fileName == null || fileSize == null) {
+                    throw new InvalidDataException("No files specified");
+                }
+                files.Add(new File(fileName, fileSize));
+            } else {
+                // Multiple file mode
+                // ReSharper disable once LoopCanBeConvertedToQuery
+                foreach (var bencodeItem in filesList) {
+                    var fileEntry = (BencodeDictionary)bencodeItem;
+                    var fileSize = fileEntry.Get<BencodeInteger>("length");
+                    var filePath = fileEntry.Get<BencodeList>("path");
+                    var fileName = filePath.Last() as BencodeByteString;
+                    var strPath = "";
+                    for (var i = 0; i < filePath.Count; i++) {
+                        if (i != 0) strPath += @"\";
+                        strPath += (BencodeByteString)filePath[i];
+                    }
+                    files.Add(new File(fileName, fileSize, strPath));
+                }
+            }
+            newMetafile.Files = files;
+
+            // Calculate total size
+            var totalSize = files.Sum(f => f.Size);
+
+            // Set piece sizes
+            for (var i = 0; i < pieces.Count; i++) {
+                if (i < pieces.Count - 1) {
+                    pieces[i].Size = pieceLength;
+                } else {
+                    pieces[i].Size = totalSize - (pieces.Count - 1) * pieceLength;
+                }
+            }
+
+            newMetafile.Size = totalSize;
 
             // Calculate info hash
             var writer = new BencodeWriter();

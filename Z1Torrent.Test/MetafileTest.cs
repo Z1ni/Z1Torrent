@@ -23,6 +23,12 @@ namespace Z1Torrent.Test {
             Assert.Equal("ia_make_torrent", mf.CreatedBy);
             Assert.NotNull(mf.CreatedAt);
             Assert.Equal(1482440734, mf.CreatedAt.Value.ToUnixTimeSeconds());
+            Assert.Equal(2, mf.Trackers.Count);
+            Assert.Equal("http://bt1.archive.org:6969/announce", mf.Trackers.First().Uri.ToString());
+            Assert.Equal("http://bt2.archive.org:6969/announce", mf.Trackers.Last().Uri.ToString());
+            Assert.Equal(1, mf.Pieces.Count);
+            Assert.Equal(new byte[] { 0x83, 0x72, 0x53, 0x2D, 0x36, 0x11, 0x50, 0xA8, 0x68, 0x52, 0x0E, 0xC8, 0x2E, 0x0F, 0x0C, 0x1C, 0x6B, 0xE2, 0x46, 0xEC }, mf.Pieces.First().Hash);
+            Assert.Equal(2, mf.Files.Count);
         }
 
         [Fact]
