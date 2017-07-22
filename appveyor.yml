@@ -5,6 +5,5 @@ before_build:
 build:
   verbosity: minimal
 test_script:
-- cmd: >-
-    dotnet test BencodeLib.Test\BencodeLib.Test.csproj
-    xunit.console.clr4 Z1Torrent.Test\bin\Debug\Z1Torrent.Test.dll /appveyor
+  - dotnet test BencodeLib.Test\BencodeLib.Test.csproj
+  - xunit.console.clr4 Z1Torrent.Test\bin\Debug\Z1Torrent.Test.dll /appveyor
