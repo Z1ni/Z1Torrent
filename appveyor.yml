@@ -7,4 +7,5 @@ build:
 test_script:
 - cmd: >-
     dotnet test BencodeLib.Test\BencodeLib.Test.csproj
+
     %xunit20%\xunit.console.x86 Z1Torrent.Test\bin\Debug\Z1Torrent.Test.dll -appveyor
