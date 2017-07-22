@@ -12,6 +12,7 @@ namespace Z1Torrent.Tracker {
     public interface ITracker {
 
         Uri Uri { get; }
+        bool IsAnnounced { get; }
 
         Task AnnounceAsync(Metafile meta, AnnounceEvent ev);
 

@@ -75,6 +75,9 @@
     <None Include="TestData\AnnounceList.torrent">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="TestData\debian-9.0.0-amd64-netinst.iso.torrent">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="TestData\EmptyMetainfo.torrent">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

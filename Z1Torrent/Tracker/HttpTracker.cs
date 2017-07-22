@@ -15,6 +15,8 @@ namespace Z1Torrent.Tracker {
     public class HttpTracker : ITracker {
 
         public Uri Uri { get; internal set; }
+        public bool IsAnnounced { get; private set; }
+
         public int Interval { get; internal set; }
         public int MinInterval { get; internal set; }
 
@@ -150,6 +152,7 @@ namespace Z1Torrent.Tracker {
 
             meta.AddPeers(peers);
 
+            IsAnnounced = true;
         }
 
     }

@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
+using Z1Torrent.Tracker;
 
 namespace Z1Torrent {
 
-    public class TorrentClient {
+    public class TorrentClient : IDisposable {
 
         private const string ClientVersion = "0001";
 
         public byte[] PeerId { get; }
         public short ListenPort { get; }
+
+        public List<Metafile> ManagedTorrents { get; private set; }
 
         public TorrentClient() {
             // Initialize
@@ -27,8 +29,25 @@ namespace Z1Torrent {
             // Select listen port
             // TODO: Select a free port
             ListenPort = 6881;
+
+            ManagedTorrents = new List<Metafile>();
         }
 
+        public void ManageTorrent(Metafile meta) {
+            if (ManagedTorrents.Contains(meta)) return;
+            ManagedTorrents.Add(meta);
+        }
+
+        public void Dispose() {
+            // Announce stopping for all managed torrents
+            foreach (var torrent in ManagedTorrents) {
+                foreach (var tracker in torrent.Trackers) {
+                    if (tracker.IsAnnounced) {
+                        tracker.AnnounceAsync(torrent, AnnounceEvent.Stopped).GetAwaiter().GetResult();
+                    }
+                }
+            }
+        }
     }
 
 }

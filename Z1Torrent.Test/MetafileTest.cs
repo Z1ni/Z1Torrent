@@ -32,6 +32,11 @@ namespace Z1Torrent.Test {
         }
 
         [Fact]
+        public void FromFile_ValidMetafile2() {
+            var mf = Metafile.FromFile(_client, @"TestData\debian-9.0.0-amd64-netinst.iso.torrent");
+        }
+
+        [Fact]
         public void FromFile_NullFilePath() {
             Assert.Throws<ArgumentNullException>(() => Metafile.FromFile(_client, null));
         }
