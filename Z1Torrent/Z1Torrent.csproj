@@ -64,7 +64,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Helpers\BinaryReaderExtensions.cs" />
     <Compile Include="File.cs" />
     <Compile Include="PeerWire\Peer.cs" />
     <Compile Include="Piece.cs" />

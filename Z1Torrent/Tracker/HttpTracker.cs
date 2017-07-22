@@ -1,16 +1,13 @@
-﻿using System;
+﻿using BencodeLib;
+using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using BencodeLib;
-using Z1Torrent.Helpers;
 using Z1Torrent.PeerWire;
 
 namespace Z1Torrent.Tracker {
@@ -30,6 +27,12 @@ namespace Z1Torrent.Tracker {
             _torrentClient = client;
             Uri = new Uri(url);
             _httpClient = new HttpClient();
+        }
+
+        public HttpTracker(TorrentClient client, HttpClient httpClient, string url) {
+            _torrentClient = client;
+            Uri = new Uri(url);
+            _httpClient = httpClient;
         }
 
         /// <summary>
@@ -119,8 +122,8 @@ namespace Z1Torrent.Tracker {
 
             var peers = new List<Peer>();
             for (var i = 0; i < peerCount; i++) {
-                var ip = new IPAddress(peerReader.ReadInt32());
-                var port = peerReader.ReadInt16BE();
+                var ip = new IPAddress(peerReader.ReadBytes(4));
+                var port = BitConverter.ToInt16(peerReader.ReadBytes(2).Reverse().ToArray(), 0);
                 peers.Add(new Peer(ip, port));
             }
 

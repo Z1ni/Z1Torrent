@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using Z1Torrent.Test.Helpers;
 using Z1Torrent.Tracker;
 
 namespace Z1Torrent.Test {
@@ -20,10 +19,12 @@ namespace Z1Torrent.Test {
         public async Task AnnounceAsync_ValidTorrent() {
 
             var torrent = Metafile.FromFile(_client, @"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
-            var tracker = torrent.Trackers.First();
+            // Create a mock HttpClient
+            var trackerHttpClient = new HttpClient(new ValidTrackerResponseHandler());
+            // Create a mock tracker
+            var tracker = new HttpTracker(_client, trackerHttpClient, torrent.Trackers.First().Uri.ToString());
 
-            // TODO: Mock tracker response
-            //await tracker.AnnounceAsync(torrent, AnnounceEvent.Started);
+            await tracker.AnnounceAsync(torrent, AnnounceEvent.Started);
         }
 
     }
