@@ -110,22 +110,45 @@ namespace Z1Torrent.Tracker {
             var complete = resp.Get<BencodeInteger>("complete");
             var incomplete = resp.Get<BencodeInteger>("incomplete");
 
-            // TODO: Read IPv6 peers
-            var rawPeers = resp.Get<BencodeByteString>("peers");
-            var peerReader = new BinaryReader(new MemoryStream(rawPeers));
-            var peerBytes = ((byte[])rawPeers).Length;
-            if (peerBytes % 6 != 0) {
-                // Invalid peer data
-                throw new InvalidDataException("Compact peer data was not in multiple of 6");
-            }
-            var peerCount = peerBytes / 6;
-
             var peers = new List<Peer>();
-            for (var i = 0; i < peerCount; i++) {
-                var ip = new IPAddress(peerReader.ReadBytes(4));
-                var port = BitConverter.ToInt16(peerReader.ReadBytes(2).Reverse().ToArray(), 0);
-                peers.Add(new Peer(ip, port));
+
+            // Read IPv4 peers
+            var rawPeers = resp.Get<BencodeByteString>("peers");
+            if (rawPeers != null) {
+                var peerReader = new BinaryReader(new MemoryStream(rawPeers));
+                var peerBytes = ((byte[])rawPeers).Length;
+                if (peerBytes % 6 != 0) {
+                    // Invalid peer data
+                    throw new InvalidDataException("Compact peer data was not in multiple of 6");
+                }
+                var peerCount = peerBytes / 6;
+
+                for (var i = 0; i < peerCount; i++) {
+                    var ip = new IPAddress(peerReader.ReadBytes(4));
+                    var port = BitConverter.ToInt16(peerReader.ReadBytes(2).Reverse().ToArray(), 0);
+                    peers.Add(new Peer(ip, port));
+                }
             }
+
+            // Read IPv6 peers
+            var raw6Peers = resp.Get<BencodeByteString>("peers6");
+            if (raw6Peers != null) {
+                var peer6Reader = new BinaryReader(new MemoryStream(raw6Peers));
+                var peer6Bytes = ((byte[])raw6Peers).Length;
+                if (peer6Bytes % 18 != 0) {
+                    // Invalid peer data
+                    throw new InvalidDataException("Compact peer6 data was not in multiple of 18");
+                }
+                var peer6Count = peer6Bytes / 18;
+
+                for (var i = 0; i < peer6Count; i++) {
+                    var ip = new IPAddress(peer6Reader.ReadBytes(16));
+                    var port = BitConverter.ToInt16(peer6Reader.ReadBytes(2).Reverse().ToArray(), 0);
+                    peers.Add(new Peer(ip, port));
+                }
+            }
+
+            meta.AddPeers(peers);
 
         }
 

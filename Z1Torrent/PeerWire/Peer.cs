@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net;
 
 namespace Z1Torrent.PeerWire {
@@ -14,12 +15,22 @@ namespace Z1Torrent.PeerWire {
             Port = port;
         }
 
+        [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
         public override bool Equals(object obj) {
             if (!(obj is Peer)) return false;
             var peer = (Peer)obj;
 
+            var peerIdEq = false;
+            if (PeerId == null && peer.PeerId == null) {
+                peerIdEq = true;
+            } else if ((PeerId != null && peer.PeerId == null) || (PeerId == null && peer.PeerId != null)) {
+                peerIdEq = false;
+            } else {
+                peerIdEq = PeerId.SequenceEqual(peer.PeerId);
+            }
+
             return (
-                PeerId.SequenceEqual(peer.PeerId) &&
+                peerIdEq &&
                 Address.Equals(peer.Address) &&
                 Port == peer.Port
             );

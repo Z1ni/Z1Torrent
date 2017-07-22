@@ -30,7 +30,7 @@ namespace Z1Torrent {
 
         private TorrentClient _client;
 
-        private List<Peer> _peers = new List<Peer>();
+        public List<Peer> Peers { get; internal set; }
 
         public static Metafile FromFile(TorrentClient client, string path) {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -180,6 +180,8 @@ namespace Z1Torrent {
                 newMetafile.InfoHash = sha1.ComputeHash(writer.Bytes);
             }
 
+            newMetafile.Peers = new List<Peer>();
+
             return newMetafile;
         }
 
@@ -187,10 +189,14 @@ namespace Z1Torrent {
         /// Add peers and discard duplicates
         /// </summary>
         /// <param name="peers"></param>
+        // TODO: Convert to extension method
         public void AddPeers(IEnumerable<Peer> peers) {
+            if (Peers == null) {
+                Peers = new List<Peer>();
+            }
             foreach (var peer in peers) {
-                if (_peers.Contains(peer)) continue;
-                _peers.Add(peer);
+                if (Peers.Contains(peer)) continue;
+                Peers.Add(peer);
             }
         }
 
