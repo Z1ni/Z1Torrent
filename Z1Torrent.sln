@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Z1Torrent", "Z1Torrent\Z1Torrent.csproj", "{82E81DCD-5EF4-4640-8617-F1164A509667}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BencodeLib", "BencodeLib\BencodeLib.csproj", "{6DD00D72-8C92-418E-A354-52D7D7F0A9E6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BencodeLib.Test", "BencodeLib.Test\BencodeLib.Test.csproj", "{D1FA22FD-5B13-4F0D-9F42-AB91B18E2735}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Z1Torrent.Test", "Z1Torrent.Test\Z1Torrent.Test.csproj", "{5A7A5100-3349-42E4-B682-6E4457E6116D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82E81DCD-5EF4-4640-8617-F1164A509667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82E81DCD-5EF4-4640-8617-F1164A509667}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82E81DCD-5EF4-4640-8617-F1164A509667}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82E81DCD-5EF4-4640-8617-F1164A509667}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DD00D72-8C92-418E-A354-52D7D7F0A9E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DD00D72-8C92-418E-A354-52D7D7F0A9E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DD00D72-8C92-418E-A354-52D7D7F0A9E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DD00D72-8C92-418E-A354-52D7D7F0A9E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1FA22FD-5B13-4F0D-9F42-AB91B18E2735}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1FA22FD-5B13-4F0D-9F42-AB91B18E2735}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1FA22FD-5B13-4F0D-9F42-AB91B18E2735}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1FA22FD-5B13-4F0D-9F42-AB91B18E2735}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A7A5100-3349-42E4-B682-6E4457E6116D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A7A5100-3349-42E4-B682-6E4457E6116D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A7A5100-3349-42E4-B682-6E4457E6116D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A7A5100-3349-42E4-B682-6E4457E6116D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
