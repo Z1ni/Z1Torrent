@@ -8,11 +8,14 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
+using NLog;
 using Z1Torrent.PeerWire;
 
 namespace Z1Torrent.Tracker {
 
     public class HttpTracker : ITracker {
+
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
         public Uri Uri { get; internal set; }
         public bool IsAnnounced { get; private set; }
@@ -86,7 +89,7 @@ namespace Z1Torrent.Tracker {
             var failReason = resp.Get<BencodeByteString>("failure reason");
             if (failReason != null) {
                 // Failed
-                Debug.WriteLine($"Tracker announce failed: {failReason}");
+                Log.Warn($"Tracker announce failed: {failReason}");
                 // TODO: Don't throw exception, handle better
                 throw new Exception($"Tracker announce failed: {failReason}");
             }
@@ -94,7 +97,7 @@ namespace Z1Torrent.Tracker {
             // Get possible warning message
             var warnMsg = resp.Get<BencodeByteString>("warning message");
             if (warnMsg != null) {
-                Debug.WriteLine($"Tracker warning: {warnMsg}");
+                Log.Warn($"Tracker warning: {warnMsg}");
             }
 
             // Get tracker id and save it

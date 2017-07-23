@@ -5,12 +5,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using NLog;
 using Z1Torrent.PeerWire;
 using Z1Torrent.Tracker;
 
 namespace Z1Torrent {
 
     public class Metafile {
+
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
         public string Title { get; internal set; }
         public long Size { get; internal set; }
         public byte[] InfoHash { get; internal set; }
@@ -71,7 +75,7 @@ namespace Z1Torrent {
             if (announceList != null) {
                 foreach (var list in announceList) {
                     if (list == null || announceList.GetType() != typeof(BencodeList) || list.GetType() != typeof(BencodeList)) {
-                        Debug.WriteLine("announce-list format is invalid");
+                        Log.Error("announce-list format is invalid");
                         break;
                     }
                     var strList = list as BencodeList;

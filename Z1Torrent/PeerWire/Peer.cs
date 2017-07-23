@@ -55,6 +55,10 @@ namespace Z1Torrent.PeerWire {
                 return hash;
             }
         }
+
+        public override string ToString() {
+            return $"[peer: {Address}:{Port}]";
+        }
     }
 
 }
