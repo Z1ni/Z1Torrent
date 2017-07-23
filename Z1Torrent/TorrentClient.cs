@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using NLog;
+using Z1Torrent.Interfaces;
 using Z1Torrent.Tracker;
 
 namespace Z1Torrent {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Z1Torrent.PeerWire.Interfaces;
 
 namespace Z1Torrent.PeerWire {
 

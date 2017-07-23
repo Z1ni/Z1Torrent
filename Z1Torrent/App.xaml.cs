@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
 using NLog;
+using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire;
+using Z1Torrent.PeerWire.Interfaces;
 
 namespace Z1Torrent {
     /// <summary>

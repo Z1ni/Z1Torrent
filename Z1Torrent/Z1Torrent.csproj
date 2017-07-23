@@ -71,14 +71,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="File.cs" />
-    <Compile Include="IMetafile.cs" />
-    <Compile Include="ITorrentClient.cs" />
+    <Compile Include="Interfaces\IMetafile.cs" />
+    <Compile Include="Interfaces\ITorrentClient.cs" />
     <Compile Include="PeerWire\BitfieldMessage.cs" />
     <Compile Include="PeerWire\HandshakeMessage.cs" />
     <Compile Include="PeerWire\HaveMessage.cs" />
-    <Compile Include="PeerWire\IMessage.cs" />
-    <Compile Include="PeerWire\IPeer.cs" />
-    <Compile Include="PeerWire\IPeerConnection.cs" />
+    <Compile Include="PeerWire\Interfaces\IMessage.cs" />
+    <Compile Include="PeerWire\Interfaces\IPeer.cs" />
+    <Compile Include="PeerWire\Interfaces\IPeerConnection.cs" />
     <Compile Include="PeerWire\KeepAliveMessage.cs" />
     <Compile Include="PeerWire\Peer.cs" />
     <Compile Include="PeerWire\PeerConnection.cs" />

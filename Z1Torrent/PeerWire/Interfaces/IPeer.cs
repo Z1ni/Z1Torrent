@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Z1Torrent.PeerWire {
+namespace Z1Torrent.PeerWire.Interfaces {
 
     public interface IPeer : IDisposable {
 

@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using Z1Torrent.Interfaces;
+using Z1Torrent.PeerWire.Interfaces;
 
 namespace Z1Torrent.PeerWire {
 

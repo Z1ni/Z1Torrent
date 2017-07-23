@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Z1Torrent.PeerWire;
+using Z1Torrent.PeerWire.Interfaces;
 using Z1Torrent.Tracker;
 
-namespace Z1Torrent {
+namespace Z1Torrent.Interfaces {
 
     public interface IMetafile {
 

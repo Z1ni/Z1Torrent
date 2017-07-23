@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using NLog;
+using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire;
+using Z1Torrent.PeerWire.Interfaces;
 using Z1Torrent.Tracker;
 
 namespace Z1Torrent {

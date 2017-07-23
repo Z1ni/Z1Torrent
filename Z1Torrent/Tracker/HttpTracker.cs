@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 using NLog;
+using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire;
 
 namespace Z1Torrent.Tracker {

@@ -5,6 +5,8 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
+using Z1Torrent.Interfaces;
+using Z1Torrent.PeerWire.Interfaces;
 
 namespace Z1Torrent.PeerWire {
 
