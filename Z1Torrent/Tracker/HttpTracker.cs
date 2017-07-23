@@ -23,18 +23,18 @@ namespace Z1Torrent.Tracker {
         public int Interval { get; internal set; }
         public int MinInterval { get; internal set; }
 
-        private TorrentClient _torrentClient;
+        private ITorrentClient _torrentClient;
         private HttpClient _httpClient;
 
         private string _trackerId;
 
-        public HttpTracker(TorrentClient client, string url) {
+        public HttpTracker(ITorrentClient client, string url) {
             _torrentClient = client;
             Uri = new Uri(url);
             _httpClient = new HttpClient();
         }
 
-        public HttpTracker(TorrentClient client, HttpClient httpClient, string url) {
+        public HttpTracker(ITorrentClient client, HttpClient httpClient, string url) {
             _torrentClient = client;
             Uri = new Uri(url);
             _httpClient = httpClient;

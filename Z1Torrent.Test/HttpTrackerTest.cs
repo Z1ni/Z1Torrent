@@ -15,7 +15,7 @@ namespace Z1Torrent.Test {
 
         public HttpTrackerTest() {
             _client = new TorrentClient();
-            _torrent = Metafile.FromFile(_client, @"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
+            _torrent = new Metafile(_client, @"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
         }
 
         [Fact]

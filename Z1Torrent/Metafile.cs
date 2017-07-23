@@ -11,7 +11,7 @@ using Z1Torrent.Tracker;
 
 namespace Z1Torrent {
 
-    public class Metafile {
+    public class Metafile : IMetafile {
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
@@ -32,13 +32,15 @@ namespace Z1Torrent {
         public List<Piece> Pieces { get; internal set; }
         public List<File> Files { get; internal set; }
 
-        private TorrentClient _client;
+        private ITorrentClient _client;
 
-        public List<Peer> Peers { get; internal set; }
+        public List<IPeer> Peers { get; internal set; }
 
-        public static Metafile FromFile(TorrentClient client, string path) {
+        public Metafile(ITorrentClient client, string path) {
             if (path == null) throw new ArgumentNullException(nameof(path));
 
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+            
             var metafileData = System.IO.File.ReadAllBytes(path);
 
             var reader = new BencodeReader(metafileData);
@@ -53,18 +55,18 @@ namespace Z1Torrent {
             }
             var root = rootItem as BencodeDictionary;
 
-            var newMetafile = new Metafile {_client = client ?? throw new ArgumentNullException(nameof(client))};
+            //var newMetafile = new Metafile {_client = client ?? throw new ArgumentNullException(nameof(client))};
             
             // ReSharper disable once PossibleNullReferenceException
             var creationBitem = root.Get("creation date");
             if (creationBitem != null) {
-                newMetafile.CreatedAt = DateTimeOffset.FromUnixTimeSeconds(root.Get<BencodeInteger>("creation date"));
+                CreatedAt = DateTimeOffset.FromUnixTimeSeconds(root.Get<BencodeInteger>("creation date"));
             } else {
-                newMetafile.CreatedAt = null;
+                CreatedAt = null;
             }
-            newMetafile.CreatedBy = root.Get<BencodeByteString>("created by");
-            newMetafile.Comment = root.Get<BencodeByteString>("comment");
-            newMetafile.Title = root.Get<BencodeByteString>("title");
+            CreatedBy = root.Get<BencodeByteString>("created by");
+            Comment = root.Get<BencodeByteString>("comment");
+            Title = root.Get<BencodeByteString>("title");
 
             // Get tracker(s)
             var trackers = new List<ITracker>();
@@ -95,7 +97,7 @@ namespace Z1Torrent {
                 }
             }
 
-            newMetafile.Trackers = trackers;
+            Trackers = trackers;
 
             // Get info
             var info = root.Get<BencodeDictionary>("info");
@@ -122,15 +124,15 @@ namespace Z1Torrent {
                 pieces.Add(new Piece(pieceHash));
             }
 
-            newMetafile.PieceLength = pieceLength;
-            newMetafile.Pieces = pieces;
+            PieceLength = pieceLength;
+            Pieces = pieces;
 
             // Get optional private value
             var priv = info.Get<BencodeInteger>("private");
             if (priv == null || priv != 1) {
-                newMetafile.Private = false;
+                Private = false;
             } else {
-                newMetafile.Private = true;
+                Private = true;
             }
 
             // Get file information
@@ -161,7 +163,7 @@ namespace Z1Torrent {
                     files.Add(new File(fileName, fileSize, strPath));
                 }
             }
-            newMetafile.Files = files;
+            Files = files;
 
             // Calculate total size
             var totalSize = files.Sum(f => f.Size);
@@ -175,18 +177,16 @@ namespace Z1Torrent {
                 }
             }
 
-            newMetafile.Size = totalSize;
+            Size = totalSize;
 
             // Calculate info hash
             var writer = new BencodeWriter();
             writer.Write(info);
             using (var sha1 = new SHA1Managed()) {
-                newMetafile.InfoHash = sha1.ComputeHash(writer.Bytes);
+                InfoHash = sha1.ComputeHash(writer.Bytes);
             }
 
-            newMetafile.Peers = new List<Peer>();
-
-            return newMetafile;
+            Peers = new List<IPeer>();
         }
 
         /// <summary>
@@ -194,9 +194,9 @@ namespace Z1Torrent {
         /// </summary>
         /// <param name="peers"></param>
         // TODO: Convert to extension method
-        public void AddPeers(IEnumerable<Peer> peers) {
+        public void AddPeers(IEnumerable<IPeer> peers) {
             if (Peers == null) {
-                Peers = new List<Peer>();
+                Peers = new List<IPeer>();
             }
             foreach (var peer in peers) {
                 if (Peers.Contains(peer)) continue;

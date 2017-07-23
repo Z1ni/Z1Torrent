@@ -10,13 +10,13 @@ using NLog;
 
 namespace Z1Torrent.PeerWire {
 
-    public class PeerConnection {
+    public class PeerConnection : IPeerConnection {
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private TorrentClient _torrentClient;
-        private Metafile _meta;
-        private Peer _peer;
+        private ITorrentClient _torrentClient;
+        private IMetafile _meta;
+        private IPeer _peer;
         private IPEndPoint _endpoint;
         private Socket _socket;
 
@@ -25,7 +25,7 @@ namespace Z1Torrent.PeerWire {
         private bool _handshakeReceived = false;
         private bool _handshakeSent = false;
 
-        public PeerConnection(TorrentClient torrentClient, Metafile meta, Peer peer) {
+        public PeerConnection(ITorrentClient torrentClient, IMetafile meta, IPeer peer) {
             _torrentClient = torrentClient;
             _meta = meta;
             _peer = peer;

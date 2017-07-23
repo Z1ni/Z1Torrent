@@ -6,7 +6,7 @@ using Z1Torrent.Tracker;
 
 namespace Z1Torrent {
 
-    public class TorrentClient : IDisposable {
+    public class TorrentClient : ITorrentClient {
 
         private const string ClientVersion = "0001";
 

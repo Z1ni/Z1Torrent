@@ -3,11 +3,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using NLog;
 
 namespace Z1Torrent.PeerWire {
 
-    public class Peer : IDisposable {
+    public class Peer : IPeer {
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
@@ -20,13 +21,13 @@ namespace Z1Torrent.PeerWire {
         public bool PeerChoking { get; private set; }
         public bool PeerInterested { get; private set; }
 
-        private TorrentClient _client;
-        private Metafile _metafile;
-        private PeerConnection _connection;
+        private ITorrentClient _client;
+        private IMetafile _metafile;
+        private IPeerConnection _connection;
         private ManualResetEvent _mre;
         private Thread _messageThread;
 
-        public Peer(TorrentClient client, Metafile meta, IPAddress address, short port) {
+        public Peer(ITorrentClient client, IMetafile meta, IPAddress address, short port) {
             Address = address;
             Port = port;
             _client = client;
@@ -70,14 +71,14 @@ namespace Z1Torrent.PeerWire {
         }
 
         public void Dispose() {
-            Stop();
+            StopMessageLoop();
         }
 
         public override string ToString() {
             return $"[peer: {Address}:{Port}]";
         }
 
-        public async void StartAsync() {
+        public async Task StartMessageLoopAsync() {
             Log.Debug($"Starting message thread for {this}");
             _mre = new ManualResetEvent(false);
             _connection = new PeerConnection(_client, _metafile, this);
@@ -89,9 +90,10 @@ namespace Z1Torrent.PeerWire {
             _messageThread.Start();
         }
 
-        public void Stop() {
+        public void StopMessageLoop() {
             Log.Debug($"Stopping {this} message thread");
             _mre.Set();
+            _messageThread.Join(3000);
         }
 
         private void MessageLoop() {

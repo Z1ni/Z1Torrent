@@ -12,14 +12,23 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using NLog;
 
 namespace Z1Torrent {
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>
 	public partial class MainWindow : Window {
-		public MainWindow() {
+
+	    private static readonly Logger Log = LogManager.GetCurrentClassLogger();
+
+        public MainWindow() {
 			InitializeComponent();
+            Log.Debug("MainWindow init");
 		}
-	}
+
+        private void button_Click(object sender, RoutedEventArgs e) {
+            MessageBox.Show(this, $"My peer ID is: {Encoding.UTF8.GetString(App.TorrentClient.PeerId)}");
+        }
+    }
 }

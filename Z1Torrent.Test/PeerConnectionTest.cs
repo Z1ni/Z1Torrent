@@ -15,7 +15,7 @@ namespace Z1Torrent.Test {
         private Metafile _torrentFile;
 
         public PeerConnectionTest() {
-            _torrentFile = Metafile.FromFile(_torrentClient, @"TestData\debian-9.0.0-amd64-netinst.iso.torrent");
+            _torrentFile = new Metafile(_torrentClient, @"TestData\debian-9.0.0-amd64-netinst.iso.torrent");
         }
 
         [Fact]
