@@ -9,11 +9,13 @@ namespace Z1Torrent.PeerWire {
     public interface IPeerConnection {
 
         Task ConnectAsync();
-        Task DisconnectAsync();
+        void Disconnect();
 
         Task SendMessageAsync(IMessage msg);
         Task<T> ReceiveMessageAsync<T>() where T : IMessage;
-        
+        Task<IMessage> ReceiveMessageAsync();
+
+
     }
 
 }

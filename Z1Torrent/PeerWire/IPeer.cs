@@ -17,7 +17,7 @@ namespace Z1Torrent.PeerWire {
         bool PeerChoking { get; }
         bool PeerInterested { get; }
 
-        Task StartMessageLoopAsync();
+        void StartMessageLoop();
         void StopMessageLoop();
 
     }

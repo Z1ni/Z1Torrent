@@ -36,13 +36,16 @@ namespace Z1Torrent {
         private static void SetupDependencies() {
             Log.Debug("Setting up dependencies");
             var builder = new ContainerBuilder();
-            builder.RegisterType<Metafile>().As<IMetafile>();
+            //builder.RegisterType<Metafile>().As<IMetafile>();
             builder.RegisterType<Peer>().As<IPeer>();
             builder.RegisterType<PeerConnection>().As<IPeerConnection>();
             builder.RegisterType<TorrentClient>().As<ITorrentClient>();
             Container = builder.Build();
         }
 
+        private void App_OnExit(object sender, ExitEventArgs e) {
+            TorrentClient.Dispose();
+        }
     }
 
 }

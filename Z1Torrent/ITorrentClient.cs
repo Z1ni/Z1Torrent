@@ -12,6 +12,7 @@ namespace Z1Torrent {
         short ListenPort { get; }
 
         void ManageTorrent(Metafile meta);
+        IMetafile ManageFromFile(string path);
 
     }
 

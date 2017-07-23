@@ -78,11 +78,9 @@ namespace Z1Torrent.PeerWire {
             return $"[peer: {Address}:{Port}]";
         }
 
-        public async Task StartMessageLoopAsync() {
+        public void StartMessageLoop() {
             Log.Debug($"Starting message thread for {this}");
             _mre = new ManualResetEvent(false);
-            _connection = new PeerConnection(_client, _metafile, this);
-            await _connection.ConnectAsync();
             // Create message thread
             _messageThread = new Thread(MessageLoop) {
                 Name = $"peer-{Address}-{Port}"
@@ -98,9 +96,13 @@ namespace Z1Torrent.PeerWire {
 
         private void MessageLoop() {
 
-            while (_mre.WaitOne(50)) {
+            _connection = new PeerConnection(_client, _metafile, this);
+            _connection.ConnectAsync().GetAwaiter().GetResult();
+
+            while (!_mre.WaitOne(50)) {
                 // TODO: Message logic
-                // TODO: Read messages
+                // Read one received message
+                var msg = _connection.ReceiveMessageAsync();
             }
 
             Log.Debug($"Message loop for {this} stopped");
