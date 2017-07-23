@@ -82,7 +82,6 @@
     <Compile Include="PeerWire\KeepAliveMessage.cs" />
     <Compile Include="PeerWire\Peer.cs" />
     <Compile Include="PeerWire\PeerConnection.cs" />
-    <Compile Include="PeerWire\SocketAsyncExtensions.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="TorrentClient.cs" />
     <Compile Include="Tracker\HttpTracker.cs" />
