@@ -131,7 +131,7 @@ namespace Z1Torrent.Tracker {
                 for (var i = 0; i < peerCount; i++) {
                     var ip = new IPAddress(peerReader.ReadBytes(4));
                     var port = BitConverter.ToInt16(peerReader.ReadBytes(2).Reverse().ToArray(), 0);
-                    peers.Add(new Peer(ip, port));
+                    peers.Add(new Peer(_torrentClient, meta, ip, port));
                 }
             }
 
@@ -149,7 +149,7 @@ namespace Z1Torrent.Tracker {
                 for (var i = 0; i < peer6Count; i++) {
                     var ip = new IPAddress(peer6Reader.ReadBytes(16));
                     var port = BitConverter.ToInt16(peer6Reader.ReadBytes(2).Reverse().ToArray(), 0);
-                    peers.Add(new Peer(ip, port));
+                    peers.Add(new Peer(_torrentClient, meta, ip, port));
                 }
             }
 

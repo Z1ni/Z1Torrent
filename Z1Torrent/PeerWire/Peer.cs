@@ -1,10 +1,15 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using NLog;
 
 namespace Z1Torrent.PeerWire {
 
-    public class Peer {
+    public class Peer : IDisposable {
+
+        private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
         public byte[] PeerId { get; }
         public IPAddress Address { get; }
@@ -15,9 +20,17 @@ namespace Z1Torrent.PeerWire {
         public bool PeerChoking { get; private set; }
         public bool PeerInterested { get; private set; }
 
-        public Peer(IPAddress address, short port) {
+        private TorrentClient _client;
+        private Metafile _metafile;
+        private PeerConnection _connection;
+        private ManualResetEvent _mre;
+        private Thread _messageThread;
+
+        public Peer(TorrentClient client, Metafile meta, IPAddress address, short port) {
             Address = address;
             Port = port;
+            _client = client;
+            _metafile = meta;
             // Initial status
             AmChoking = true;
             AmInterested = false;
@@ -56,8 +69,39 @@ namespace Z1Torrent.PeerWire {
             }
         }
 
+        public void Dispose() {
+            Stop();
+        }
+
         public override string ToString() {
             return $"[peer: {Address}:{Port}]";
+        }
+
+        public async void StartAsync() {
+            Log.Debug($"Starting message thread for {this}");
+            _mre = new ManualResetEvent(false);
+            _connection = new PeerConnection(_client, _metafile, this);
+            await _connection.ConnectAsync();
+            // Create message thread
+            _messageThread = new Thread(MessageLoop) {
+                Name = $"peer-{Address}-{Port}"
+            };
+            _messageThread.Start();
+        }
+
+        public void Stop() {
+            Log.Debug($"Stopping {this} message thread");
+            _mre.Set();
+        }
+
+        private void MessageLoop() {
+
+            while (_mre.WaitOne(50)) {
+                // TODO: Message logic
+                // TODO: Read messages
+            }
+
+            Log.Debug($"Message loop for {this} stopped");
         }
     }
 
