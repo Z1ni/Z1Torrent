@@ -10,9 +10,19 @@ namespace Z1Torrent.PeerWire {
         public IPAddress Address { get; }
         public short Port { get; }
 
+        public bool AmChoking { get; private set; }
+        public bool AmInterested { get; private set; }
+        public bool PeerChoking { get; private set; }
+        public bool PeerInterested { get; private set; }
+
         public Peer(IPAddress address, short port) {
             Address = address;
             Port = port;
+            // Initial status
+            AmChoking = true;
+            AmInterested = false;
+            PeerChoking = true;
+            PeerInterested = false;
         }
 
         [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
