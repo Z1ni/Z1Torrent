@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using Z1Torrent.Interfaces;
 
 namespace Z1Torrent {
 
@@ -16,7 +14,7 @@ namespace Z1Torrent {
         public Config() {
             // Generate peer ID
             var strPeerId = $"-Z1{ClientVersion}-";
-            const string chars = "0123456789";
+            const string chars = "0123456789abcdefghijklmnopqrstuvwABCDEFGHIJKLMNOPQRSTUVW";
             var rnd = new Random();
             for (var i = 0; i < 12; i++) {
                 strPeerId += chars[rnd.Next(chars.Length)];

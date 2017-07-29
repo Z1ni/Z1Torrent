@@ -74,7 +74,7 @@
     <Compile Include="Factories\HttpTrackerFactory.cs" />
     <Compile Include="Factories\MetafileFactory.cs" />
     <Compile Include="File.cs" />
-    <Compile Include="IConfig.cs" />
+    <Compile Include="Interfaces\IConfig.cs" />
     <Compile Include="Interfaces\IHttpTrackerFactory.cs" />
     <Compile Include="Interfaces\IMetafile.cs" />
     <Compile Include="Interfaces\IMetafileFactory.cs" />
