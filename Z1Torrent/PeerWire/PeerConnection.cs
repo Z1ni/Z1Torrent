@@ -1,12 +1,8 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
-using NLog;
 using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire.Interfaces;
 
@@ -16,15 +12,14 @@ namespace Z1Torrent.PeerWire {
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        //private ITorrentClient _torrentClient;
-        private IConfig _config;
-        private IMetafile _meta;
-        private IPeer _peer;
-        private IPEndPoint _endpoint;
-        private ITcpClient _tcpClient;
+        private readonly IConfig _config;
+        private readonly IMetafile _meta;
+        private readonly IPeer _peer;
+        private readonly ITcpClient _tcpClient;
 
-        private Queue<byte> _dataBuffer;
+        private readonly Queue<byte> _dataBuffer;
 
+        public HandshakeMessage PeerHandshake { get; private set; }
         private bool _handshakeReceived = false;
         private bool _handshakeSent = false;
 
@@ -32,7 +27,6 @@ namespace Z1Torrent.PeerWire {
             _config = config;
             _meta = meta;
             _peer = peer;
-            _endpoint = new IPEndPoint(_peer.Address, _peer.Port);
             _tcpClient = tcpClient;
             _dataBuffer = new Queue<byte>();
         }
@@ -93,6 +87,7 @@ namespace Z1Torrent.PeerWire {
                 Log.Trace(BitConverter.ToString(handshake).Replace("-", ""));
                 msg = new HandshakeMessage();
                 msg.Unpack(handshake);
+                PeerHandshake = (HandshakeMessage)msg;
                 _handshakeReceived = true;
                 return msg;
             }

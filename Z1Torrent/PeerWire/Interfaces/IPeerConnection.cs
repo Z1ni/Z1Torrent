@@ -8,6 +8,8 @@ namespace Z1Torrent.PeerWire.Interfaces {
 
     public interface IPeerConnection {
 
+        HandshakeMessage PeerHandshake { get; }
+
         Task ConnectAsync();
         void Disconnect();
 
