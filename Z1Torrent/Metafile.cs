@@ -1,13 +1,11 @@
 ﻿using BencodeLib;
+using NLog;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using NLog;
 using Z1Torrent.Interfaces;
-using Z1Torrent.PeerWire;
 using Z1Torrent.PeerWire.Interfaces;
 using Z1Torrent.Tracker;
 
@@ -34,15 +32,11 @@ namespace Z1Torrent {
         public List<Piece> Pieces { get; internal set; }
         public List<File> Files { get; internal set; }
 
-        private ITorrentClient _client;
-
         public List<IPeer> Peers { get; internal set; }
 
-        public Metafile(ITorrentClient client, string path) {
+        public Metafile(IHttpTrackerFactory httpTrackerFactory, string path) {
             if (path == null) throw new ArgumentNullException(nameof(path));
 
-            _client = client ?? throw new ArgumentNullException(nameof(client));
-            
             var metafileData = System.IO.File.ReadAllBytes(path);
 
             var reader = new BencodeReader(metafileData);
@@ -86,7 +80,7 @@ namespace Z1Torrent {
                     // ReSharper disable once PossibleNullReferenceException
                     var url = strList[0] as BencodeByteString;
                     // TODO: Check URL and tracker type (HTTP, UDP)
-                    trackers.Add(new HttpTracker(client, url));
+                    trackers.Add(httpTrackerFactory.CreateHttpTracker(url));
                 }
             }
             // Check announce
@@ -95,7 +89,7 @@ namespace Z1Torrent {
                 var announce = root.Get<BencodeByteString>("announce");
                 if (announce != null) {
                     // TODO: Check URL and tracker type (HTTP, UDP)
-                    trackers.Add(new HttpTracker(client, announce));
+                    trackers.Add(httpTrackerFactory.CreateHttpTracker(announce));
                 }
             }
 

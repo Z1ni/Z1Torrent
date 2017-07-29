@@ -16,23 +16,24 @@ namespace Z1Torrent.PeerWire {
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private ITorrentClient _torrentClient;
+        //private ITorrentClient _torrentClient;
+        private IConfig _config;
         private IMetafile _meta;
         private IPeer _peer;
         private IPEndPoint _endpoint;
-        private TcpClient _tcpClient;
+        private ITcpClient _tcpClient;
 
         private Queue<byte> _dataBuffer;
 
         private bool _handshakeReceived = false;
         private bool _handshakeSent = false;
 
-        public PeerConnection(ITorrentClient torrentClient, IMetafile meta, IPeer peer) {
-            _torrentClient = torrentClient;
+        public PeerConnection(IConfig config, ITcpClient tcpClient, IMetafile meta, IPeer peer) {
+            _config = config;
             _meta = meta;
             _peer = peer;
             _endpoint = new IPEndPoint(_peer.Address, _peer.Port);
-            _tcpClient = new TcpClient(); // new TcpClient(_endpoint);
+            _tcpClient = tcpClient;
             _dataBuffer = new Queue<byte>();
         }
 
@@ -40,7 +41,7 @@ namespace Z1Torrent.PeerWire {
             Log.Debug($"Connecting to {_peer}");
             await _tcpClient.ConnectAsync(_peer.Address, _peer.Port);
             // Send a handshake
-            var ownHandshake = new HandshakeMessage(_meta.InfoHash, _torrentClient.PeerId);
+            var ownHandshake = new HandshakeMessage(_meta.InfoHash, _config.PeerId);
             await SendMessageAsync(ownHandshake);
             // Receive a handshake
             var theirHandshake = await ReceiveMessageAsync<HandshakeMessage>();
@@ -61,8 +62,7 @@ namespace Z1Torrent.PeerWire {
             }
             var packed = message.Pack();
             // TODO: Handle partial sends?
-            var stream = _tcpClient.GetStream();
-            await stream.WriteAsync(packed, 0, packed.Length);
+            await _tcpClient.WriteBytesAsync(packed, 0, packed.Length);
             Log.Trace($"Sent {packed.Length} bytes to {_peer}");
             if (message is HandshakeMessage) {
                 _handshakeSent = true;
@@ -90,6 +90,7 @@ namespace Z1Torrent.PeerWire {
                     await ReceiveToBufferAsync();
                 }
                 var handshake = GetFromReceiveBuffer(68);
+                Log.Trace(BitConverter.ToString(handshake).Replace("-", ""));
                 msg = new HandshakeMessage();
                 msg.Unpack(handshake);
                 _handshakeReceived = true;
@@ -184,9 +185,8 @@ namespace Z1Torrent.PeerWire {
 
         private async Task ReceiveToBufferAsync() {
             var buffer = new byte[2048];
-            var stream = _tcpClient.GetStream();
             //stream.ReadTimeout = 100;   // Timeout data read after 100 milliseconds to perform other tasks
-            var received = await stream.ReadAsync(buffer, 0, 2048);
+            var received = await _tcpClient.ReadBytesAsync(buffer, 0, 2048);
             Log.Trace($"Received {received} bytes from {_peer}");
             for (var i = 0; i < received; i++) {
                 _dataBuffer.Enqueue(buffer[i]);

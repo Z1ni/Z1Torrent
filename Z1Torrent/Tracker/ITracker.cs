@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Z1Torrent.Interfaces;
 
 namespace Z1Torrent.Tracker {
 
@@ -14,7 +15,7 @@ namespace Z1Torrent.Tracker {
         Uri Uri { get; }
         bool IsAnnounced { get; }
 
-        Task AnnounceAsync(Metafile meta, AnnounceEvent ev);
+        Task AnnounceAsync(IMetafile meta, AnnounceEvent ev);
 
     }
 

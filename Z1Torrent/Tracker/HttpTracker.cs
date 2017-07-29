@@ -24,19 +24,22 @@ namespace Z1Torrent.Tracker {
         public int Interval { get; internal set; }
         public int MinInterval { get; internal set; }
 
-        private ITorrentClient _torrentClient;
-        private HttpClient _httpClient;
+        private readonly IConfig _config;
+        private readonly IPeerConnectionFactory _peerConnFactory;
+        private readonly HttpClient _httpClient;
 
         private string _trackerId;
 
-        public HttpTracker(ITorrentClient client, string url) {
-            _torrentClient = client;
+        public HttpTracker(IConfig config, IPeerConnectionFactory peerConnFactory, string url) {
+            _config = config;
+            _peerConnFactory = peerConnFactory;
             Uri = new Uri(url);
             _httpClient = new HttpClient();
         }
 
-        public HttpTracker(ITorrentClient client, HttpClient httpClient, string url) {
-            _torrentClient = client;
+        public HttpTracker(IConfig config, IPeerConnectionFactory peerConnFactory, HttpClient httpClient, string url) {
+            _config = config;
+            _peerConnFactory = peerConnFactory;
             Uri = new Uri(url);
             _httpClient = httpClient;
         }
@@ -47,21 +50,21 @@ namespace Z1Torrent.Tracker {
         /// <param name="meta">Torrent to announce</param>
         /// <param name="ev">Event to announce</param>
         /// <returns></returns>
-        public async Task AnnounceAsync(Metafile meta, AnnounceEvent ev) {
+        public async Task AnnounceAsync(IMetafile meta, AnnounceEvent ev) {
 
             if (meta == null) throw new ArgumentNullException(nameof(meta));
 
             if (meta.InfoHash == null) throw new ArgumentNullException(nameof(meta.InfoHash));
 
             var infohashUrl = HttpUtility.UrlEncode(meta.InfoHash);
-            var peerIdUrl = HttpUtility.UrlEncode(_torrentClient.PeerId);
+            var peerIdUrl = HttpUtility.UrlEncode(_config.PeerId);
 
             var builder = new UriBuilder(Uri);
 
             var query = HttpUtility.ParseQueryString("");
             query.Add("info_hash", infohashUrl);
             query.Add("peer_id", peerIdUrl);
-            query.Add("port", _torrentClient.ListenPort.ToString());
+            query.Add("port", _config.ListenPort.ToString());
             query.Add("uploaded", meta.Uploaded.ToString());
             query.Add("downloaded", meta.Downloaded.ToString());
             query.Add("left", meta.Left.ToString());
@@ -132,7 +135,7 @@ namespace Z1Torrent.Tracker {
                 for (var i = 0; i < peerCount; i++) {
                     var ip = new IPAddress(peerReader.ReadBytes(4));
                     var port = BitConverter.ToInt16(peerReader.ReadBytes(2).Reverse().ToArray(), 0);
-                    peers.Add(new Peer(_torrentClient, meta, ip, port));
+                    peers.Add(new Peer(_peerConnFactory, meta, ip, port));
                 }
             }
 
@@ -150,7 +153,7 @@ namespace Z1Torrent.Tracker {
                 for (var i = 0; i < peer6Count; i++) {
                     var ip = new IPAddress(peer6Reader.ReadBytes(16));
                     var port = BitConverter.ToInt16(peer6Reader.ReadBytes(2).Reverse().ToArray(), 0);
-                    peers.Add(new Peer(_torrentClient, meta, ip, port));
+                    peers.Add(new Peer(_peerConnFactory, meta, ip, port));
                 }
             }
 

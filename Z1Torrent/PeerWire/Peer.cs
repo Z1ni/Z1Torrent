@@ -23,16 +23,16 @@ namespace Z1Torrent.PeerWire {
         public bool PeerChoking { get; private set; }
         public bool PeerInterested { get; private set; }
 
-        private ITorrentClient _client;
         private IMetafile _metafile;
+        private IPeerConnectionFactory _peerConnFactory;
         private IPeerConnection _connection;
         private ManualResetEvent _mre;
         private Thread _messageThread;
 
-        public Peer(ITorrentClient client, IMetafile meta, IPAddress address, short port) {
+        public Peer(IPeerConnectionFactory peerConnFactory, IMetafile meta, IPAddress address, short port) {
             Address = address;
             Port = port;
-            _client = client;
+            _peerConnFactory = peerConnFactory;
             _metafile = meta;
             // Initial status
             AmChoking = true;
@@ -98,7 +98,7 @@ namespace Z1Torrent.PeerWire {
 
         private void MessageLoop() {
 
-            _connection = new PeerConnection(_client, _metafile, this);
+            _connection = _peerConnFactory.CreatePeerConnection(_metafile, this);
             _connection.ConnectAsync().GetAwaiter().GetResult();
 
             while (!_mre.WaitOne(50)) {

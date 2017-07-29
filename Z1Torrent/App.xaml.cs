@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
 using NLog;
+using Z1Torrent.Factories;
 using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire;
 using Z1Torrent.PeerWire.Interfaces;
@@ -23,6 +24,7 @@ namespace Z1Torrent {
         // Dependency injection
         private static IContainer Container { get; set; }
         public static ITorrentClient TorrentClient { get; set; }
+        public static IConfig Config { get; private set; }
 
         protected override void OnStartup(StartupEventArgs e) {
             base.OnStartup(e);
@@ -31,6 +33,7 @@ namespace Z1Torrent {
 
             SetupDependencies();
             TorrentClient = Container.Resolve<ITorrentClient>();
+            Config = Container.Resolve<IConfig>();
 
             Log.Info("Application setup done");
         }
@@ -38,9 +41,13 @@ namespace Z1Torrent {
         private static void SetupDependencies() {
             Log.Debug("Setting up dependencies");
             var builder = new ContainerBuilder();
-            //builder.RegisterType<Metafile>().As<IMetafile>();
-            builder.RegisterType<Peer>().As<IPeer>();
-            builder.RegisterType<PeerConnection>().As<IPeerConnection>();
+            // TODO: Check if other classes can be singletons
+            builder.RegisterType<Config>().As<IConfig>().SingleInstance();
+            builder.RegisterType<MetafileFactory>().As<IMetafileFactory>();
+            builder.RegisterType<HttpTrackerFactory>().As<IHttpTrackerFactory>();
+            builder.RegisterType<TcpClientAdapter>().As<ITcpClient>();
+            builder.RegisterType<PeerConnectionFactory>().As<IPeerConnectionFactory>();
+            builder.RegisterType<PeerFactory>().As<IPeerFactory>();
             builder.RegisterType<TorrentClient>().As<ITorrentClient>();
             Container = builder.Build();
         }

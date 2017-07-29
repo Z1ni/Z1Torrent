@@ -1,23 +1,27 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Z1Torrent;
 using Xunit;
+using Z1Torrent.Factories;
+using Z1Torrent.Interfaces;
 
 namespace Z1Torrent.Test {
 
     public class MetafileTest {
 
-        private TorrentClient _client;
+        private readonly IConfig _config = new Config();
+        private IMetafileFactory _metafileFactory;
 
         public MetafileTest() {
-            _client = new TorrentClient();
+            var peerConnFact = new PeerConnectionFactory(_config, new TcpClientAdapter());
+            var httpTrackerFact = new HttpTrackerFactory(_config, peerConnFact);
+            _metafileFactory = new MetafileFactory(httpTrackerFact);
         }
 
         [Fact]
         public void FromFile_ValidMetafile() {
 
-            var mf = new Metafile(_client, @"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
+            var mf = _metafileFactory.CreateMetafileFromFile(@"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
 
             Assert.Equal("This content hosted at the Internet Archive at https://archive.org/details/AdCouncil-Adoption-DangerDad-30_CLSD\nFiles may have changed, which prevents torrents from downloading correctly or completely; please check for an updated torrent at https://archive.org/download/AdCouncil-Adoption-DangerDad-30_CLSD/AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent\nNote: retrieval usually requires a client that supports webseeding (GetRight style).\nNote: many Internet Archive torrents contain a 'pad file' directory. This directory and the files within it may be erased once retrieval completes.\nNote: the file AdCouncil-Adoption-DangerDad-30_CLSD_meta.xml contains metadata about this torrent's contents.", mf.Comment);
             Assert.Equal("ia_make_torrent", mf.CreatedBy);
@@ -33,37 +37,33 @@ namespace Z1Torrent.Test {
 
         [Fact]
         public void FromFile_ValidMetafile2() {
-            var mf = new Metafile(_client, @"TestData\debian-9.0.0-amd64-netinst.iso.torrent");
+            var mf = _metafileFactory.CreateMetafileFromFile(@"TestData\debian-9.0.0-amd64-netinst.iso.torrent");
+            // TODO
         }
 
         [Fact]
         public void FromFile_NullFilePath() {
-            Assert.Throws<ArgumentNullException>(() => new Metafile(_client, null));
-        }
-
-        [Fact]
-        public void FromFile_NullClient() {
-            Assert.Throws<ArgumentNullException>(() => new Metafile(null, null));
+            Assert.Throws<ArgumentNullException>(() => _metafileFactory.CreateMetafileFromFile(null));
         }
 
         [Fact]
         public void FromFile_NonExistent() {
-            Assert.Throws<FileNotFoundException>(() => new Metafile(_client, @"TestData\nonexistant-metainfo-file.torrent"));
+            Assert.Throws<FileNotFoundException>(() => _metafileFactory.CreateMetafileFromFile(@"TestData\nonexistant-metainfo-file.torrent"));
         }
 
         [Fact]
         public void FromFile_EmptyFile() {
-            Assert.Throws<InvalidDataException>(() => new Metafile(_client, @"TestData\EmptyMetainfo.torrent"));
+            Assert.Throws<InvalidDataException>(() => _metafileFactory.CreateMetafileFromFile(@"TestData\EmptyMetainfo.torrent"));
         }
 
         [Fact]
         public void FromFile_InvalidStructure() {
-            Assert.Throws<InvalidDataException>(() => new Metafile(_client, @"TestData\InvalidStructure.torrent"));
+            Assert.Throws<InvalidDataException>(() => _metafileFactory.CreateMetafileFromFile(@"TestData\InvalidStructure.torrent"));
         }
 
         [Fact]
         public void FromFile_InfohashCorrect() {
-            var mf = new Metafile(_client, @"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
+            var mf = _metafileFactory.CreateMetafileFromFile(@"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
             byte[] infoHash = {
                 0x00, 0xD7, 0x80, 0x6B, 0x08, 0x93, 0xA6, 0x9D, 0x36, 0xFB, 0x56, 0x26,
                 0x6B, 0x57, 0x2A, 0x47, 0xC8, 0x71, 0xF1, 0x64
@@ -73,7 +73,7 @@ namespace Z1Torrent.Test {
 
         [Fact]
         public void FromFile_InvalidAnnounceList() {
-            var mf = new Metafile(_client, @"TestData\InvalidAnnounceList.torrent");
+            var mf = _metafileFactory.CreateMetafileFromFile(@"TestData\InvalidAnnounceList.torrent");
             Assert.Equal(1, mf.Trackers.Count);
             Assert.Equal("http://tracker2.example.com/announce", mf.Trackers.First().Uri.ToString());
         }
@@ -81,7 +81,7 @@ namespace Z1Torrent.Test {
         [Fact]
         public void FromFile_AnnounceListOverrides() {
             // announce-list must override announce if present
-            var mf = new Metafile(_client, @"TestData\AnnounceList.torrent");
+            var mf = _metafileFactory.CreateMetafileFromFile(@"TestData\AnnounceList.torrent");
             Assert.Equal(1, mf.Trackers.Count);
             Assert.Equal("http://tracker.example.com/announce", mf.Trackers.First().Uri.ToString());
         }

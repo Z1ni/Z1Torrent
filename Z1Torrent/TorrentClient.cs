@@ -1,10 +1,6 @@
-﻿using System;
+﻿using NLog;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using NLog;
 using Z1Torrent.Interfaces;
-using Z1Torrent.Tracker;
 
 namespace Z1Torrent {
 
@@ -14,27 +10,14 @@ namespace Z1Torrent {
 
         private const string ClientVersion = "0001";
 
-        public byte[] PeerId { get; }
-        public short ListenPort { get; }
+        public List<IMetafile> ManagedTorrents { get; private set; }
 
-        public List<Metafile> ManagedTorrents { get; private set; }
+        private IMetafileFactory _metafileFactory;
 
-        public TorrentClient() {
+        public TorrentClient(IMetafileFactory metafileFactory) {
+            _metafileFactory = metafileFactory;
             // Initialize
-            // Generate peer ID
-            var strPeerId = $"-Z1{ClientVersion}-";
-            const string chars = "0123456789";
-            var rnd = new Random();
-            for (var i = 0; i < 12; i++) {
-                strPeerId += chars[rnd.Next(chars.Length)];
-            }
-            PeerId = Encoding.ASCII.GetBytes(strPeerId);
-
-            // Select listen port
-            // TODO: Select a free port
-            ListenPort = 6881;
-
-            ManagedTorrents = new List<Metafile>();
+            ManagedTorrents = new List<IMetafile>();
         }
 
         public void ManageTorrent(Metafile meta) {
@@ -44,7 +27,7 @@ namespace Z1Torrent {
 
         public IMetafile ManageFromFile(string path) {
             // Read metafile
-            var meta = new Metafile(this, path);
+            var meta = _metafileFactory.CreateMetafileFromFile(path);
             if (ManagedTorrents.Contains(meta)) return null;
             ManagedTorrents.Add(meta);
             return meta;

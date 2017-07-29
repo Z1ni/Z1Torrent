@@ -2,7 +2,10 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Moq;
 using Xunit;
+using Z1Torrent.Factories;
+using Z1Torrent.Interfaces;
 using Z1Torrent.Test.Helpers;
 using Z1Torrent.Tracker;
 
@@ -10,12 +13,16 @@ namespace Z1Torrent.Test {
 
     public class HttpTrackerTest {
 
-        private TorrentClient _client;
-        private Metafile _torrent;
+        private readonly IConfig _config;
+        private readonly IMetafile _torrent;
+        private readonly IPeerConnectionFactory _peerConnFact;
 
         public HttpTrackerTest() {
-            _client = new TorrentClient();
-            _torrent = new Metafile(_client, @"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
+            _config = new Config();
+            _peerConnFact = new PeerConnectionFactory(_config, new TcpClientAdapter());
+            var httpTrackerFact = new HttpTrackerFactory(_config, _peerConnFact);
+            var metafileFact = new MetafileFactory(httpTrackerFact);
+            _torrent = metafileFact.CreateMetafileFromFile(@"TestData\AdCouncil-Adoption-DangerDad-30_CLSD_archive.torrent");
         }
 
         [Fact]
@@ -32,7 +39,7 @@ namespace Z1Torrent.Test {
                 0x70, 0x65, 0x65, 0x72, 0x73, 0x36, 0x3A, 0x80, 0x42, 0x00, 0x01, 0x1A,
                 0xE1, 0x65
             }));
-            var tracker = new HttpTracker(_client, trackerHttpClient, _torrent.Trackers.First().Uri.ToString());
+            var tracker = new HttpTracker(_config, _peerConnFact, trackerHttpClient, _torrent.Trackers.First().Uri.ToString());
             await tracker.AnnounceAsync(_torrent, AnnounceEvent.Started);
 
             Assert.Equal(1, _torrent.Peers.Count);
@@ -54,7 +61,7 @@ namespace Z1Torrent.Test {
                 0x20, 0x01, 0x0D, 0xB8, 0x01, 0x00, 0x00, 0x00, 0xB0, 0x85, 0x2F, 0x53,
                 0xFE, 0xED, 0xAF, 0x6F, 0x1A, 0xE1, 0x65
             }));
-            var tracker = new HttpTracker(_client, trackerHttpClient, _torrent.Trackers.First().Uri.ToString());
+            var tracker = new HttpTracker(_config, _peerConnFact, trackerHttpClient, _torrent.Trackers.First().Uri.ToString());
             await tracker.AnnounceAsync(_torrent, AnnounceEvent.Started);
 
             Assert.Equal(2, _torrent.Peers.Count);
