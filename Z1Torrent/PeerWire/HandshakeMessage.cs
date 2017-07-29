@@ -17,14 +17,16 @@ namespace Z1Torrent.PeerWire {
         public HandshakeMessage(byte[] infohash, byte[] peerid) {
             Infohash = infohash;
             PeerId = peerid;
+            Protocol = "BitTorrent protocol";
+            Reserved = new byte[8];
         }
 
         public byte[] Pack() {
             var stream = new MemoryStream();
             var writer = new BinaryWriter(stream);
-            writer.Write((byte)19);
-            writer.Write("BitTorrent protocol".ToCharArray());  // Use char arrays because BinaryWriter.Write(string) has its own length prefix
-            writer.Write(new byte[8]);
+            writer.Write((byte)Protocol.Length);
+            writer.Write(Protocol.ToCharArray());  // Use char arrays because BinaryWriter.Write(string) has its own length prefix
+            writer.Write(Reserved);
             writer.Write(Infohash);
             writer.Write(PeerId);
             writer.Flush();

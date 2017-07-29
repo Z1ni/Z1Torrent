@@ -8,8 +8,6 @@ namespace Z1Torrent {
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private const string ClientVersion = "0001";
-
         public List<IMetafile> ManagedTorrents { get; private set; }
 
         private IMetafileFactory _metafileFactory;

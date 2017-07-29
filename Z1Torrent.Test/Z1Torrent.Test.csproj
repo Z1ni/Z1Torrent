@@ -62,6 +62,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\PeerConnectionMocker.cs" />
     <Compile Include="Helpers\ValidTrackerResponseHandler.cs" />
     <Compile Include="HttpTrackerTest.cs" />
     <Compile Include="MetafileTest.cs" />
