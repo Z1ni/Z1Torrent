@@ -7,6 +7,8 @@ namespace Z1Torrent.PeerWire {
 
     public class HandshakeMessage : IMessage {
 
+        public int Id => 0; // Handshake message has no ID, so this doesn't matter
+
         public string Protocol { get; private set; }
         public byte[] Reserved { get; private set; }
         public byte[] Infohash { get; private set; }

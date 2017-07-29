@@ -13,6 +13,11 @@ namespace Z1Torrent.PeerWire.Interfaces {
     public interface IMessage {
 
         /// <summary>
+        /// Message ID
+        /// </summary>
+        int Id { get; }
+
+        /// <summary>
         /// This method should return the payload bytes of the message.
         /// <para>Can be an empty array.</para>
         /// </summary>

@@ -62,8 +62,9 @@ namespace Z1Torrent.PeerWire {
                     // Length of keep-alive is 0
                     dataBuf.AddRange(new byte[4]);
                 } else {
-                    // Otherwise length is 1 (length field size) + payload size
+                    // Otherwise length is 1 (id field size) + payload size
                     dataBuf.AddRange(BitConverter.GetBytes(1 + packed.Length));
+                    dataBuf.Add((byte)message.Id);
                 }
             }
             dataBuf.AddRange(packed);

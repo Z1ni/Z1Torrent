@@ -5,6 +5,8 @@ namespace Z1Torrent.PeerWire {
 
     public class BitfieldMessage : IMessage {
 
+        public int Id => 5;
+
         public byte[] Bitfield { get; private set; }
 
         public byte[] Pack() {

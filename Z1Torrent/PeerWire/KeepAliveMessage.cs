@@ -4,6 +4,8 @@ namespace Z1Torrent.PeerWire {
 
     public class KeepAliveMessage : IMessage {
 
+        public int Id => 0; // Keep-alive has no ID, so this doesn't matter
+
         public byte[] Pack() {
             return new byte[0];
         }

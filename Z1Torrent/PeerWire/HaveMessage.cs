@@ -6,6 +6,8 @@ namespace Z1Torrent.PeerWire {
 
     public class HaveMessage : IMessage {
 
+        public int Id => 4;
+
         public int PieceIndex { get; private set; }
 
         public HaveMessage() { }
