@@ -74,6 +74,7 @@ namespace Z1Torrent.PeerWire {
 
         public void Dispose() {
             StopMessageLoop();
+            _mre.Dispose();
         }
 
         public override string ToString() {
@@ -100,6 +101,8 @@ namespace Z1Torrent.PeerWire {
 
             _connection = _peerConnFactory.CreatePeerConnection(_metafile, this);
             _connection.ConnectAsync().GetAwaiter().GetResult();
+
+            // TODO: Send keep-alive messages
 
             while (!_mre.WaitOne(50)) {
                 // TODO: Message logic

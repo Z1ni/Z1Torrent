@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Z1Torrent.PeerWire.Interfaces;
+﻿using Z1Torrent.PeerWire.Interfaces;
 
 namespace Z1Torrent.PeerWire {
 
     public class KeepAliveMessage : IMessage {
 
         public byte[] Pack() {
-            return new byte[4];
+            return new byte[0];
         }
 
         public void Unpack(byte[] data) {

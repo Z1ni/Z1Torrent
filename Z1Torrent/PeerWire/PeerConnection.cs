@@ -55,8 +55,21 @@ namespace Z1Torrent.PeerWire {
                 return;
             }
             var packed = message.Pack();
+            // Add message length if this is not handshake
+            var dataBuf = new List<byte>();
+            if (message.GetType() != typeof(HandshakeMessage)) {
+                if (message.GetType() == typeof(KeepAliveMessage)) {
+                    // Length of keep-alive is 0
+                    dataBuf.AddRange(new byte[4]);
+                } else {
+                    // Otherwise length is 1 (length field size) + payload size
+                    dataBuf.AddRange(BitConverter.GetBytes(1 + packed.Length));
+                }
+            }
+            dataBuf.AddRange(packed);
             // TODO: Handle partial sends?
-            await _tcpClient.WriteBytesAsync(packed, 0, packed.Length);
+            var dataToSend = dataBuf.ToArray();
+            await _tcpClient.WriteBytesAsync(dataToSend, 0, dataToSend.Length);
             Log.Trace($"Sent {packed.Length} bytes to {_peer}");
             if (message is HandshakeMessage) {
                 _handshakeSent = true;
@@ -72,6 +85,7 @@ namespace Z1Torrent.PeerWire {
             
             // Receive data
             // Don't receive if buffer has data
+            // TODO: Have this in loop to ensure that at least something has been received?
             if (_dataBuffer.Count == 0) {
                 await ReceiveToBufferAsync();
             }
@@ -105,6 +119,7 @@ namespace Z1Torrent.PeerWire {
             var msgLen = BitConverter.ToInt32(lenBytes, 0);
             if (msgLen == 0) {
                 // Keep-alive
+                Log.Debug($"Got keep-alive message from {_peer}");
                 return new KeepAliveMessage();
             }
 
