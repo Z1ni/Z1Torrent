@@ -138,21 +138,25 @@ namespace Z1Torrent.PeerWire {
                 case 0:
                     // Choke message
                     Log.Debug($"Got choke message from {_peer}");
+                    msg = new ChokeMessage();
                     break;
 
                 case 1:
                     // Unchoke
                     Log.Debug($"Got unchoke message from {_peer}");
+                    msg = new UnchokeMessage();
                     break;
 
                 case 2:
                     // Interested
                     Log.Debug($"Got interested message from {_peer}");
+                    msg = new InterestedMessage();
                     break;
 
                 case 3:
                     // Not interested
                     Log.Debug($"Got not interested message from {_peer}");
+                    msg = new NotInterestedMessage();
                     break;
 
                 case 4:

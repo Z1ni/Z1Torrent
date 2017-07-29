@@ -85,6 +85,10 @@
     <Compile Include="Factories\PeerConnectionFactory.cs" />
     <Compile Include="Factories\PeerFactory.cs" />
     <Compile Include="PeerWire\BitfieldMessage.cs" />
+    <Compile Include="PeerWire\NotInterestedMessage.cs" />
+    <Compile Include="PeerWire\InterestedMessage.cs" />
+    <Compile Include="PeerWire\UnchokeMessage.cs" />
+    <Compile Include="PeerWire\ChokeMessage.cs" />
     <Compile Include="PeerWire\HandshakeMessage.cs" />
     <Compile Include="PeerWire\HaveMessage.cs" />
     <Compile Include="PeerWire\Interfaces\IMessage.cs" />
