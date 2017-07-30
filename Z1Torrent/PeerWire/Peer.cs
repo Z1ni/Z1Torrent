@@ -104,12 +104,15 @@ namespace Z1Torrent.PeerWire {
 
             // TODO: Send keep-alive messages
 
-            // Block for 100ms every loop iteration
-            while (!_mre.WaitOne(100)) {
+            var wait = 0;
+
+            while (!_mre.WaitOne(wait)) {
                 // Read one received message
+                wait = 0;
                 var msg = _connection.ReceiveMessageAsync().GetAwaiter().GetResult();
                 if (msg == null) {
-                    // No message to read, wait and try again
+                    // No message to read, wait 100ms and try again
+                    wait = 100;
                     continue;
                 }
 
