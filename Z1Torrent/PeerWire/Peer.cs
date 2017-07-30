@@ -8,6 +8,7 @@ using System.Threading;
 using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire.ExtendedMessages;
 using Z1Torrent.PeerWire.Interfaces;
+using Z1Torrent.PeerWire.Messages;
 
 namespace Z1Torrent.PeerWire {
 

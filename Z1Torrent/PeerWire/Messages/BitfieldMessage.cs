@@ -1,7 +1,7 @@
 ﻿using System;
 using Z1Torrent.PeerWire.Interfaces;
 
-namespace Z1Torrent.PeerWire {
+namespace Z1Torrent.PeerWire.Messages {
 
     public class BitfieldMessage : IMessage {
 

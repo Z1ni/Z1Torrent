@@ -9,6 +9,7 @@ using Z1Torrent.Factories;
 using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire;
 using Z1Torrent.PeerWire.Interfaces;
+using Z1Torrent.PeerWire.Messages;
 using Z1Torrent.Test.Helpers;
 
 namespace Z1Torrent.Test {
@@ -180,6 +181,7 @@ namespace Z1Torrent.Test {
             await peerConn.ReceiveMessageAsync();   // Receive extended handshake
             Assert.NotNull(peerConn.ExtendedPeerHandshake);
             var extHs = peerConn.ExtendedPeerHandshake;
+
             Assert.Equal("qBittorrent v3.3.11", extHs.ClientNameVersion);
             Assert.Equal(8999, extHs.LocalListenPort);
             Assert.Equal(IPAddress.Parse("127.0.0.1"), extHs.YourIp);

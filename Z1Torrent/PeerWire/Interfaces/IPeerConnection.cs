@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Z1Torrent.PeerWire.ExtendedMessages;
+using Z1Torrent.PeerWire.Messages;
 
 namespace Z1Torrent.PeerWire.Interfaces {
 

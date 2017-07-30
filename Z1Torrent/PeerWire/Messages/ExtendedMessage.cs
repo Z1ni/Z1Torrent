@@ -1,13 +1,10 @@
-﻿using BencodeLib;
-using System;
+﻿using NLog;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using NLog;
 using Z1Torrent.PeerWire.ExtendedMessages;
 using Z1Torrent.PeerWire.Interfaces;
 
-namespace Z1Torrent.PeerWire {
+namespace Z1Torrent.PeerWire.Messages {
 
     public class ExtendedMessage : IMessage {
 

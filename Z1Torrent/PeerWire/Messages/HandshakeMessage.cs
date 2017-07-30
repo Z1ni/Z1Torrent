@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using Z1Torrent.PeerWire.Interfaces;
 
-namespace Z1Torrent.PeerWire {
+namespace Z1Torrent.PeerWire.Messages {
 
     public class HandshakeMessage : IMessage {
 
