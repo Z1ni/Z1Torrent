@@ -36,11 +36,22 @@ namespace Z1Torrent {
             return _client.GetStream();
         }*/
 
+        /// <summary>
+        /// Reads data from stream to the given buffer.
+        /// </summary>
+        /// <param name="buffer">Buffer to write to</param>
+        /// <param name="offset">Offset in given buffer</param>
+        /// <param name="count">How many bytes to read from the stream</param>
+        /// <returns>Modifies given buffer and returns amount of bytes read. Returns 0 on EOS and -1 on no available data</returns>
         public async Task<int> ReadBytesAsync(byte[] buffer, int offset, int count) {
             var stream = _client.GetStream();
             if (!stream.DataAvailable) {
+                if (!_client.Connected) {
+                    // The connection has been closed
+                    return 0;
+                }
                 // If there's no data available, don't block
-                return 0;
+                return -1;
             }
             return await stream.ReadAsync(buffer, offset, count);
         }

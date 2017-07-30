@@ -1,6 +1,7 @@
 ﻿using NLog;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Z1Torrent.Interfaces;
@@ -22,6 +23,9 @@ namespace Z1Torrent.PeerWire {
         public HandshakeMessage PeerHandshake { get; private set; }
         private bool _handshakeReceived = false;
         private bool _handshakeSent = false;
+
+        public DateTime LastMessageSentTime { get; private set; }
+        public DateTime LastMessageReceivedTime { get; private set; }
 
         public PeerConnection(IConfig config, ITcpClient tcpClient, IMetafile meta, IPeer peer) {
             _config = config;
@@ -63,7 +67,7 @@ namespace Z1Torrent.PeerWire {
                     dataBuf.AddRange(new byte[4]);
                 } else {
                     // Otherwise length is 1 (id field size) + payload size
-                    dataBuf.AddRange(BitConverter.GetBytes(1 + packed.Length));
+                    dataBuf.AddRange(BitConverter.GetBytes(1 + packed.Length).Reverse());
                     dataBuf.Add((byte)message.Id);
                 }
             }
@@ -71,10 +75,11 @@ namespace Z1Torrent.PeerWire {
             // TODO: Handle partial sends?
             var dataToSend = dataBuf.ToArray();
             await _tcpClient.WriteBytesAsync(dataToSend, 0, dataToSend.Length);
-            Log.Trace($"Sent {packed.Length} bytes to {_peer}");
+            Log.Trace($"Sent {dataToSend.Length} bytes to {_peer}");
             if (message is HandshakeMessage) {
                 _handshakeSent = true;
             }
+            LastMessageSentTime = DateTime.Now;
         }
 
         public async Task<T> ReceiveMessageAsync<T>() where T : IMessage {
@@ -108,6 +113,7 @@ namespace Z1Torrent.PeerWire {
                 msg.Unpack(handshake);
                 PeerHandshake = (HandshakeMessage)msg;
                 _handshakeReceived = true;
+                LastMessageReceivedTime = DateTime.Now;
                 return msg;
             }
 
@@ -125,6 +131,7 @@ namespace Z1Torrent.PeerWire {
             if (msgLen == 0) {
                 // Keep-alive
                 Log.Debug($"Got keep-alive message from {_peer}");
+                LastMessageReceivedTime = DateTime.Now;
                 return new KeepAliveMessage();
             }
 
@@ -137,6 +144,9 @@ namespace Z1Torrent.PeerWire {
             // Now we have message ID and possible payload
             int msgId = GetFromReceiveBuffer(1)[0];
             var payload = GetFromReceiveBuffer(msgLen - 1);
+
+            LastMessageReceivedTime = DateTime.Now;
+
             switch (msgId) {
 
                 case 0:
@@ -173,7 +183,7 @@ namespace Z1Torrent.PeerWire {
                 case 5:
                     // Bitfield
                     Log.Debug($"Got bitfield message from {_peer}");
-                    msg = new BitfieldMessage();;
+                    msg = new BitfieldMessage();
                     msg.Unpack(payload);
                     break;
 
@@ -205,8 +215,15 @@ namespace Z1Torrent.PeerWire {
         private async Task ReceiveToBufferAsync() {
             var buffer = new byte[2048];
             var received = await _tcpClient.ReadBytesAsync(buffer, 0, 2048);
-            if (received == 0) {
+            if (received == -1) {
+                // No data available right now
                 return;
+            }
+            if (received == 0) {
+                // End of stream, close connection
+                _tcpClient.Close();
+                _tcpClient.Dispose();   // TODO: Is this needed?
+                throw new EndOfStreamException("Peer connection closed");
             }
             Log.Trace($"Received {received} bytes from {_peer}");
             for (var i = 0; i < received; i++) {

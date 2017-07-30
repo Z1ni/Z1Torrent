@@ -9,6 +9,8 @@ namespace Z1Torrent.PeerWire.Interfaces {
     public interface IPeerConnection {
 
         HandshakeMessage PeerHandshake { get; }
+        DateTime LastMessageSentTime { get; }
+        DateTime LastMessageReceivedTime { get; }
 
         Task ConnectAsync();
         void Disconnect();

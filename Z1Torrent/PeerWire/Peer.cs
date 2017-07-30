@@ -1,10 +1,10 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
-using NLog;
 using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire.Interfaces;
 
@@ -102,14 +102,43 @@ namespace Z1Torrent.PeerWire {
             _connection = _peerConnFactory.CreatePeerConnection(_metafile, this);
             _connection.ConnectAsync().GetAwaiter().GetResult();
 
-            // TODO: Send keep-alive messages
+            //_connection.SendMessageAsync(new InterestedMessage()).GetAwaiter().GetResult();
+
+            var keepAliveGraceTimeStart = DateTime.Now;
 
             var wait = 0;
 
             while (!_mre.WaitOne(wait)) {
+
+                // Check if we have to send keep-alive
+                // TODO: Add intervals to config
+                var now = DateTime.Now;
+                if (now >= keepAliveGraceTimeStart + TimeSpan.FromSeconds(5) && now >= _connection.LastMessageSentTime + TimeSpan.FromMinutes(1)) {
+                    // Send keep-alive
+                    keepAliveGraceTimeStart = DateTime.Now;
+                    Log.Trace($"Sending keep-alive to {this}");
+                    try {
+                        _connection.SendMessageAsync(new KeepAliveMessage()).GetAwaiter().GetResult();
+                    } catch (IOException) {
+                        // Send failed, connection should be closed
+                        _connection.Disconnect();
+                        Log.Debug($"Connection to {this} closed");
+                        _mre.Set();
+                        break;
+                    }
+                }
+
                 // Read one received message
                 wait = 0;
-                var msg = _connection.ReceiveMessageAsync().GetAwaiter().GetResult();
+                IMessage msg = null;
+                try {
+                    msg = _connection.ReceiveMessageAsync().GetAwaiter().GetResult();
+                } catch (EndOfStreamException e) {
+                    // Stream was closed, connection has been closed
+                    Log.Debug($"Connection to {this} closed");
+                    _mre.Set();
+                    break;
+                }
                 if (msg == null) {
                     // No message to read, wait 100ms and try again
                     wait = 100;
