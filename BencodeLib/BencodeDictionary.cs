@@ -42,6 +42,11 @@ namespace BencodeLib {
             _dictionary.Add(key, new BencodeByteString(value));
         }
 
+        // Custom BencodeByteString Add
+        public void Add(string key, byte[] value) {
+            _dictionary.Add(key, new BencodeByteString(value));
+        }
+
         public void Clear() {
             ((IDictionary<string, IBencodeItem>)_dictionary).Clear();
         }

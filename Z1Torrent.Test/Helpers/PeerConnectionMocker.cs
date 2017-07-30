@@ -26,7 +26,7 @@ namespace Z1Torrent.Test.Helpers {
                 .Returns(Task.CompletedTask);
             mockClient
                 .Setup(s => s.ReadBytesAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
-                .Returns(Task.FromResult(respList[curRespIdx].Length))
+                .Returns(() => Task.FromResult(respList[curRespIdx].Length))
                 .Callback<byte[], int, int>((buf, offset, count) => {
                     // Get the next response from the list
                     Array.Copy(respList[curRespIdx], buf, respList[curRespIdx].Length);

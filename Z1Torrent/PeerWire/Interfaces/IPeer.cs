@@ -10,6 +10,7 @@ namespace Z1Torrent.PeerWire.Interfaces {
     public interface IPeer : IDisposable {
 
         byte[] PeerId { get; }
+        string ClientName { get; }
         IPAddress Address { get; }
         short Port { get; }
         bool AmChoking { get; }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using Z1Torrent.Interfaces;
+using Z1Torrent.PeerWire.ExtendedMessages;
 using Z1Torrent.PeerWire.Interfaces;
 
 namespace Z1Torrent.PeerWire {
@@ -15,6 +16,7 @@ namespace Z1Torrent.PeerWire {
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
         public byte[] PeerId { get; }
+        public string ClientName { get; private set; }
         public IPAddress Address { get; }
         public short Port { get; }
 
@@ -158,6 +160,41 @@ namespace Z1Torrent.PeerWire {
                         break;
                     case NotInterestedMessage _:
                         PeerInterested = false;
+                        break;
+
+                    case ExtendedMessage m:
+                        Log.Debug($"Got extended message {m.ExtendedMessageObj?.Id} from {this}");
+                        switch (m.ExtendedMessageObj) {
+
+                            case ExtendedHandshakeMessage e:
+                                Log.Debug($"Got extended handshake message from {this}");
+                                if (e.ClientNameVersion != null) {
+                                    ClientName = e.ClientNameVersion;
+                                    Log.Trace($"{this} ext: Client name: {ClientName}");
+                                }
+                                if (e.LocalListenPort != null) {
+                                    // TODO: Save this data
+                                    Log.Trace($"{this} ext: Local listen port: {e.LocalListenPort}");
+                                }
+                                if (e.YourIp != null) {
+                                    // TODO: Save this data
+                                    Log.Trace($"{this} ext: Your IP: {e.YourIp}");
+                                }
+                                if (e.MyIpv6 != null) {
+                                    // TODO: Save this data
+                                    Log.Trace($"{this} ext: My IPv6: {e.MyIpv6}");
+                                }
+                                if (e.MyIpv4 != null) {
+                                    // TODO: Save this data
+                                    Log.Trace($"{this} ext: My IPv4: {e.MyIpv4}");
+                                }
+                                if (e.ReqQ != null) {
+                                    // TODO: Save this data
+                                    Log.Trace($"{this} ext: ReqQ: {e.ReqQ}");
+                                }
+                                break;
+
+                        }
                         break;
                 }
             }

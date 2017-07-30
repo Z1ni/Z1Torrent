@@ -2,6 +2,7 @@
 
     public interface IConfig {
 
+        string ClientNameVersion { get; }
         byte[] PeerId { get; }
         short ListenPort { get; }
 

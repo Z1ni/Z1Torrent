@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Z1Torrent.Interfaces;
+using Z1Torrent.PeerWire.ExtendedMessages;
 using Z1Torrent.PeerWire.Interfaces;
 
 namespace Z1Torrent.PeerWire {
@@ -21,6 +22,7 @@ namespace Z1Torrent.PeerWire {
         private readonly Queue<byte> _dataBuffer;
 
         public HandshakeMessage PeerHandshake { get; private set; }
+        public ExtendedHandshakeMessage ExtendedPeerHandshake { get; private set; }
         private bool _handshakeReceived = false;
         private bool _handshakeSent = false;
 
@@ -44,6 +46,12 @@ namespace Z1Torrent.PeerWire {
             // Receive a handshake
             var theirHandshake = await ReceiveMessageAsync<HandshakeMessage>();
             Log.Debug($"Got handshake from {_peer}, reserved bytes: {BitConverter.ToString(theirHandshake.Reserved)}");
+            
+            // If peer supports extension protocol, send extended handshake
+            if ((theirHandshake.Reserved[5] & 0x10) == 0x10) {
+                var extMsg = new ExtendedMessage(0, new ExtendedHandshakeMessage(clientNameVer: _config.ClientNameVersion));
+                await SendMessageAsync(extMsg);
+            }
         }
 
         public void Disconnect() {
@@ -205,6 +213,17 @@ namespace Z1Torrent.PeerWire {
                 case 9:
                     // Port
                     Log.Debug($"Got port message from {_peer}");;
+                    break;
+
+                case 20:
+                    // Extended
+                    Log.Debug($"Got extended message from {_peer}");
+                    msg = new ExtendedMessage();
+                    msg.Unpack(payload);
+                    var extMsg = msg as ExtendedMessage;
+                    if (extMsg.ExtendedMessageObj is ExtendedHandshakeMessage) {
+                        ExtendedPeerHandshake = (ExtendedHandshakeMessage)extMsg.ExtendedMessageObj;
+                    }
                     break;
 
             }

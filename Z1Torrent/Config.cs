@@ -6,8 +6,12 @@ namespace Z1Torrent {
 
     public class Config : IConfig {
 
-        private const string ClientVersion = "0001";
+        private const string ClientName = "Z1Torrent";
+        private const string Version = "0.0.1 alpha";
 
+        private const string ClientVersion = "0001";    // TODO: Create this from version info
+
+        public string ClientNameVersion => $"{ClientName} {Version}";
         public byte[] PeerId { get; }
         public short ListenPort { get; }
 

@@ -21,6 +21,7 @@ namespace Z1Torrent.PeerWire {
             PeerId = peerid;
             Protocol = "BitTorrent protocol";
             Reserved = new byte[8];
+            Reserved[5] |= 0x10;    // Support extended message, see http://www.libtorrent.org/extension_protocol.html
         }
 
         public byte[] Pack() {
