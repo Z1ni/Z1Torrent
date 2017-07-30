@@ -36,14 +36,19 @@ namespace Z1Torrent {
             return _client.GetStream();
         }*/
 
-        public Task<int> ReadBytesAsync(byte[] buffer, int offset, int count) {
+        public async Task<int> ReadBytesAsync(byte[] buffer, int offset, int count) {
             var stream = _client.GetStream();
-            return stream.ReadAsync(buffer, offset, count);
+            if (!stream.DataAvailable) {
+                // If there's no data available, don't block
+                return 0;
+            }
+            return await stream.ReadAsync(buffer, offset, count);
         }
 
-        public Task WriteBytesAsync(byte[] buffer, int offset, int count) {
+        public async Task WriteBytesAsync(byte[] buffer, int offset, int count) {
             var stream = _client.GetStream();
-            return stream.WriteAsync(buffer, offset, count);
+            stream.WriteTimeout = 3000;
+            await stream.WriteAsync(buffer, offset, count);
         }
     }
 

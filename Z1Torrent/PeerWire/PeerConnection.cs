@@ -89,6 +89,10 @@ namespace Z1Torrent.PeerWire {
             // TODO: Have this in loop to ensure that at least something has been received?
             if (_dataBuffer.Count == 0) {
                 await ReceiveToBufferAsync();
+                if (_dataBuffer.Count == 0) {
+                    // If there's still no data, give up
+                    return null;
+                }
             }
 
             if (!_handshakeReceived) {
@@ -200,8 +204,10 @@ namespace Z1Torrent.PeerWire {
 
         private async Task ReceiveToBufferAsync() {
             var buffer = new byte[2048];
-            //stream.ReadTimeout = 100;   // Timeout data read after 100 milliseconds to perform other tasks
             var received = await _tcpClient.ReadBytesAsync(buffer, 0, 2048);
+            if (received == 0) {
+                return;
+            }
             Log.Trace($"Received {received} bytes from {_peer}");
             for (var i = 0; i < received; i++) {
                 _dataBuffer.Enqueue(buffer[i]);

@@ -104,10 +104,30 @@ namespace Z1Torrent.PeerWire {
 
             // TODO: Send keep-alive messages
 
-            while (!_mre.WaitOne(50)) {
-                // TODO: Message logic
+            // Block for 100ms every loop iteration
+            while (!_mre.WaitOne(100)) {
                 // Read one received message
-                var msg = _connection.ReceiveMessageAsync();
+                var msg = _connection.ReceiveMessageAsync().GetAwaiter().GetResult();
+                if (msg == null) {
+                    // No message to read, wait and try again
+                    continue;
+                }
+
+                // TODO: Message logic
+                switch (msg) {
+                    case ChokeMessage _:
+                        PeerChoking = true;
+                        break;
+                    case UnchokeMessage _:
+                        PeerChoking = false;
+                        break;
+                    case InterestedMessage _:
+                        PeerInterested = true;
+                        break;
+                    case NotInterestedMessage _:
+                        PeerInterested = false;
+                        break;
+                }
             }
 
             Log.Debug($"Message loop for {this} stopped");
