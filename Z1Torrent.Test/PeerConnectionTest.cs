@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Moq;
 using System.Net;
 using System.Text;
@@ -17,6 +18,15 @@ namespace Z1Torrent.Test {
         private readonly IConfig _config;
         private readonly IMetafile _torrentFile;
 
+        private static byte[] _validHandshakeResponse = {
+            0x13, 0x42, 0x69, 0x74, 0x54, 0x6F, 0x72, 0x72, 0x65, 0x6E, 0x74, 0x20,
+            0x70, 0x72, 0x6F, 0x74, 0x6F, 0x63, 0x6F, 0x6C, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x10, 0x00, 0x05, 0xD4, 0xAB, 0xEF, 0xDF, 0x19, 0xC5, 0xA9, 0xAB,
+            0x73, 0xCE, 0xD3, 0x89, 0xFA, 0xCA, 0x97, 0xBD, 0xCB, 0xB2, 0xEF, 0x3F,
+            0x2D, 0x71, 0x42, 0x33, 0x33, 0x42, 0x30, 0x2D, 0x47, 0x44, 0x2E, 0x29,
+            0x2D, 0x6E, 0x47, 0x6A, 0x28, 0x79, 0x66, 0x67
+        };
+
         public PeerConnectionTest() {
             _config = new Config();
             var peerConnFact = new PeerConnectionFactory(_config, new TcpClientAdapter());
@@ -32,14 +42,7 @@ namespace Z1Torrent.Test {
             // Reserved: 00 00 00 00 00 10 00 05
             // Infohash: D4ABEFDF19C5A9AB73CED389FACA97BDCBB2EF3F
             // Peer ID: "-qB33B0-GD.)-nGj(yfg" (qBittorrent 3.3.11)
-            var peerConnFact = PeerConnectionMocker.CreatePeerConnectionFactoryWithResponse(new byte[] {
-                0x13, 0x42, 0x69, 0x74, 0x54, 0x6F, 0x72, 0x72, 0x65, 0x6E, 0x74, 0x20,
-                0x70, 0x72, 0x6F, 0x74, 0x6F, 0x63, 0x6F, 0x6C, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x10, 0x00, 0x05, 0xD4, 0xAB, 0xEF, 0xDF, 0x19, 0xC5, 0xA9, 0xAB,
-                0x73, 0xCE, 0xD3, 0x89, 0xFA, 0xCA, 0x97, 0xBD, 0xCB, 0xB2, 0xEF, 0x3F,
-                0x2D, 0x71, 0x42, 0x33, 0x33, 0x42, 0x30, 0x2D, 0x47, 0x44, 0x2E, 0x29,
-                0x2D, 0x6E, 0x47, 0x6A, 0x28, 0x79, 0x66, 0x67
-            });
+            var peerConnFact = PeerConnectionMocker.CreatePeerConnectionFactoryWithResponse(_validHandshakeResponse);
             var peerConn = peerConnFact.CreatePeerConnection(_torrentFile, new Peer(peerConnFact, _torrentFile, IPAddress.Loopback, 12345));
             await peerConn.ConnectAsync();
 
@@ -73,6 +76,77 @@ namespace Z1Torrent.Test {
             await Assert.ThrowsAsync<InvalidMessageException>(async () => await peerConn.ConnectAsync());
         }
 
+        [Fact]
+        public async Task ReceiveMessageAsync_ChokeReceivedAsync() {
+            var peerConnFact = PeerConnectionMocker.CreatePeerConnectionFactoryWithResponses(new List<byte[]> {
+                _validHandshakeResponse,    // Handshake
+                new byte[] {                // Choke
+                    0x00, 0x00, 0x00, 0x01, 0x00
+                }
+            });
+            var peerConn = peerConnFact.CreatePeerConnection(_torrentFile, new Peer(peerConnFact, _torrentFile, IPAddress.Loopback, 12345));
+            await peerConn.ConnectAsync();
+            var msg = await peerConn.ReceiveMessageAsync();
+            Assert.IsType<ChokeMessage>(msg);
+        }
+
+        [Fact]
+        public async Task ReceiveMessageAsync_UnchokeReceivedAsync() {
+            var peerConnFact = PeerConnectionMocker.CreatePeerConnectionFactoryWithResponses(new List<byte[]> {
+                _validHandshakeResponse,    // Handshake
+                new byte[] {                // Unchoke
+                    0x00, 0x00, 0x00, 0x01, 0x01
+                }
+            });
+            var peerConn = peerConnFact.CreatePeerConnection(_torrentFile, new Peer(peerConnFact, _torrentFile, IPAddress.Loopback, 12345));
+            await peerConn.ConnectAsync();
+            var msg = await peerConn.ReceiveMessageAsync();
+            Assert.IsType<UnchokeMessage>(msg);
+        }
+
+        [Fact]
+        public async Task ReceiveMessageAsync_InterestedReceivedAsync() {
+            var peerConnFact = PeerConnectionMocker.CreatePeerConnectionFactoryWithResponses(new List<byte[]> {
+                _validHandshakeResponse,    // Handshake
+                new byte[] {                // Interested
+                    0x00, 0x00, 0x00, 0x01, 0x02
+                }
+            });
+            var peerConn = peerConnFact.CreatePeerConnection(_torrentFile, new Peer(peerConnFact, _torrentFile, IPAddress.Loopback, 12345));
+            await peerConn.ConnectAsync();
+            var msg = await peerConn.ReceiveMessageAsync();
+            Assert.IsType<InterestedMessage>(msg);
+        }
+
+        [Fact]
+        public async Task ReceiveMessageAsync_NotInterestedReceivedAsync() {
+            var peerConnFact = PeerConnectionMocker.CreatePeerConnectionFactoryWithResponses(new List<byte[]> {
+                _validHandshakeResponse,    // Handshake
+                new byte[] {                // Not interested
+                    0x00, 0x00, 0x00, 0x01, 0x03
+                }
+            });
+            var peerConn = peerConnFact.CreatePeerConnection(_torrentFile, new Peer(peerConnFact, _torrentFile, IPAddress.Loopback, 12345));
+            await peerConn.ConnectAsync();
+            var msg = await peerConn.ReceiveMessageAsync();
+            Assert.IsType<NotInterestedMessage>(msg);
+        }
+
+        [Fact]
+        public async Task ReceiveMessageAsync_HaveReceivedAsync() {
+            var peerConnFact = PeerConnectionMocker.CreatePeerConnectionFactoryWithResponses(new List<byte[]> {
+                _validHandshakeResponse,    // Handshake
+                new byte[] {                // Have, piece ID 1234567890 (0x499602D2)
+                    0x00, 0x00, 0x00, 0x05, 0x04, 0x49, 0x96, 0x02, 0xD2
+                }
+            });
+            var peerConn = peerConnFact.CreatePeerConnection(_torrentFile, new Peer(peerConnFact, _torrentFile, IPAddress.Loopback, 12345));
+            await peerConn.ConnectAsync();
+            var msg = await peerConn.ReceiveMessageAsync();
+            Assert.IsType<HaveMessage>(msg);
+            var haveMsg = (HaveMessage)msg;
+            Assert.Equal(1234567890, haveMsg.PieceIndex);
+        }
     }
 
 }
