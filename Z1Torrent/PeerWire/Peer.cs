@@ -136,7 +136,7 @@ namespace Z1Torrent.PeerWire {
                 IMessage msg = null;
                 try {
                     msg = _connection.ReceiveMessageAsync().GetAwaiter().GetResult();
-                } catch (EndOfStreamException e) {
+                } catch (EndOfStreamException) {
                     // Stream was closed, connection has been closed
                     Log.Debug($"Connection to {this} closed");
                     _mre.Set();
