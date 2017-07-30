@@ -198,12 +198,18 @@ namespace Z1Torrent.PeerWire {
 
                 case 6:
                     // Request
-                    Log.Debug($"Got request message from {_peer}");
+                    msg = new RequestMessage();
+                    msg.Unpack(payload);
+                    var reqMsg = (RequestMessage)msg;
+                    Log.Debug($"Got request message from {_peer}, idx: {reqMsg.Index}, begin: {reqMsg.Begin}, len: {reqMsg.Length}");
                     break;
 
                 case 7:
                     // Piece
-                    Log.Debug($"Got piece message from {_peer}");
+                    msg = new PieceMessage();
+                    msg.Unpack(payload);
+                    var pieceMsg = (PieceMessage)msg;
+                    Log.Debug($"Got piece message from {_peer}, idx: {pieceMsg.Index}, begin: {pieceMsg.Begin}, len: {pieceMsg.Block.Length}");
                     break;
 
                 case 8:

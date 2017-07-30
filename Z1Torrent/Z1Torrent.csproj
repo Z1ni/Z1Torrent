@@ -90,6 +90,8 @@
     <Compile Include="PeerWire\Interfaces\IExtendedMessage.cs" />
     <Compile Include="PeerWire\Messages\NotInterestedMessage.cs" />
     <Compile Include="PeerWire\Messages\InterestedMessage.cs" />
+    <Compile Include="PeerWire\Messages\PieceMessage.cs" />
+    <Compile Include="PeerWire\Messages\RequestMessage.cs" />
     <Compile Include="PeerWire\Messages\UnchokeMessage.cs" />
     <Compile Include="PeerWire\Messages\ChokeMessage.cs" />
     <Compile Include="PeerWire\Messages\HandshakeMessage.cs" />

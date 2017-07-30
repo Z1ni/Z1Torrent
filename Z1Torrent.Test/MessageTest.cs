@@ -79,6 +79,53 @@ namespace Z1Torrent.Test {
             Assert.Equal(new byte[] { 0x49, 0x96, 0x02, 0xD2 }, msg.Pack());
         }
 
+        [Fact]
+        public void RequestMessage_ParseValid() {
+            // Index: 54321
+            // Begin: 42
+            // Length: 16 KiB (16384 bytes)
+            var payload = new byte[] {
+                0x00, 0x00, 0xD4, 0x31, 0x00, 0x00, 0x00, 0x2A, 0x00, 0x00, 0x40, 0x00
+            };
+            var msg = new RequestMessage();
+            msg.Unpack(payload);
+            Assert.Equal(54321, msg.Index);
+            Assert.Equal(42, msg.Begin);
+            Assert.Equal(16384, msg.Length);
+        }
+
+        [Fact]
+        public void RequestMessage_CreateValid() {
+            var msg = new RequestMessage(54321, 42, 16384);
+            Assert.Equal(new byte[] {
+                0x00, 0x00, 0xD4, 0x31, 0x00, 0x00, 0x00, 0x2A, 0x00, 0x00, 0x40, 0x00
+            }, msg.Pack());
+        }
+
+        [Fact]
+        public void PieceMessage_ParseValid() {
+            // Index: 54321
+            // Begin: 42
+            // Block: 4 bytes of data (0xAABBCCDD)
+            var payload = new byte[] {
+                0x00, 0x00, 0xD4, 0x31, 0x00, 0x00, 0x00, 0x2A, 0xAA, 0xBB, 0xCC, 0xDD
+            };
+            var msg = new PieceMessage();
+            msg.Unpack(payload);
+            Assert.Equal(54321, msg.Index);
+            Assert.Equal(42, msg.Begin);
+            Assert.Equal(4, msg.Block.Length);
+            Assert.Equal(new byte[] { 0xAA, 0xBB, 0xCC, 0xDD }, msg.Block);
+        }
+
+        [Fact]
+        public void PieceMessage_CreateValid() {
+            var msg = new PieceMessage(54321, 42, new byte[] { 0xAA, 0xBB, 0xCC, 0xDD });
+            Assert.Equal(new byte[] {
+                0x00, 0x00, 0xD4, 0x31, 0x00, 0x00, 0x00, 0x2A, 0xAA, 0xBB, 0xCC, 0xDD
+            }, msg.Pack());
+        }
+
     }
 
 }
