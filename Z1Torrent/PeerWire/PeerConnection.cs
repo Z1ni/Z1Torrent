@@ -227,6 +227,10 @@ namespace Z1Torrent.PeerWire {
                     }
                     break;
 
+                default:
+                    // Unknown message
+                    Log.Warn($"Peer {_peer} sent unknown message with type {msgId}, payload len: {payload.Length}");
+                    break;
             }
 
             return msg;

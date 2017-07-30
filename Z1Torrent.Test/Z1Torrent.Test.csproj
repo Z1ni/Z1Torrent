@@ -65,6 +65,7 @@
     <Compile Include="Helpers\PeerConnectionMocker.cs" />
     <Compile Include="Helpers\ValidTrackerResponseHandler.cs" />
     <Compile Include="HttpTrackerTest.cs" />
+    <Compile Include="MessageTest.cs" />
     <Compile Include="MetafileTest.cs" />
     <Compile Include="PeerConnectionTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
