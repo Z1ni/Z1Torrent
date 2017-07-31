@@ -126,6 +126,27 @@ namespace Z1Torrent.Test {
             }, msg.Pack());
         }
 
+        [Fact]
+        public void BitfieldMessage_ParseValid() {
+            // Total pieces: 31, missing 4
+            // Missing pieces: 17, 19, 21, 23
+            var payload = new byte[] {
+                0xFF, 0xFF, 0xAA, 0xFE
+            };
+            var msg = new BitfieldMessage();
+            msg.Unpack(payload);
+            Assert.Equal(payload, msg.Bitfield);
+        }
+
+        [Fact]
+        public void BitfieldMessage_CreateValid() {
+            var data = new byte[] {
+                0xFF, 0xFF, 0xAA, 0xFE
+            };
+            var msg = new BitfieldMessage(data);
+            Assert.Equal(data, msg.Pack());
+        }
+
     }
 
 }

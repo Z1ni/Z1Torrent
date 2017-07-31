@@ -1,5 +1,4 @@
-﻿using System;
-using Z1Torrent.PeerWire.Interfaces;
+﻿using Z1Torrent.PeerWire.Interfaces;
 
 namespace Z1Torrent.PeerWire.Messages {
 
@@ -9,8 +8,14 @@ namespace Z1Torrent.PeerWire.Messages {
 
         public byte[] Bitfield { get; private set; }
 
+        public BitfieldMessage() { }
+
+        public BitfieldMessage(byte[] bitfield) {
+            Bitfield = bitfield;
+        }
+
         public byte[] Pack() {
-            throw new NotImplementedException();
+            return Bitfield;
         }
 
         public void Unpack(byte[] data) {

@@ -27,6 +27,8 @@ namespace Z1Torrent.PeerWire {
         public bool PeerInterested { get; private set; }
 
         private IMetafile _metafile;
+        private Bitfield _bitfield;
+
         private IPeerConnectionFactory _peerConnFactory;
         private IPeerConnection _connection;
         private ManualResetEvent _mre;
@@ -42,6 +44,7 @@ namespace Z1Torrent.PeerWire {
             AmInterested = false;
             PeerChoking = true;
             PeerInterested = false;
+            _bitfield = new Bitfield((uint)_metafile.Pieces.Count);
         }
 
         [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
@@ -161,6 +164,18 @@ namespace Z1Torrent.PeerWire {
                         break;
                     case NotInterestedMessage _:
                         PeerInterested = false;
+                        break;
+
+                    case BitfieldMessage b:
+                        // TODO: Prevent multiple bitfield messages
+                        _bitfield.BitfieldData = b.Bitfield;
+                        Log.Debug($"Peer {this} has {_bitfield.HavePieceCount}/{_bitfield.PieceCount} pieces ({Math.Round((double)_bitfield.HavePieceCount / _bitfield.PieceCount * 100d, 2)} %)");
+                        break;
+
+                    case HaveMessage h:
+                        // TODO: Check for non-initialized bitfield
+                        _bitfield.SetPieceStatus(h.PieceIndex, true);
+                        Log.Debug($"Peer {this} has {_bitfield.HavePieceCount}/{_bitfield.PieceCount} pieces ({Math.Round((double)_bitfield.HavePieceCount / _bitfield.PieceCount * 100d, 2)} %)");
                         break;
 
                     case ExtendedMessage m:
