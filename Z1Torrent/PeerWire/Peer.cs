@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using Z1Torrent.Interfaces;
 using Z1Torrent.PeerWire.ExtendedMessages;
@@ -99,17 +100,27 @@ namespace Z1Torrent.PeerWire {
 
         public void StopMessageLoop() {
             Log.Debug($"Stopping {this} message thread");
-            _mre.Set();
-            _messageThread.Join(3000);
+            _mre?.Set();
+            _messageThread?.Join(3000);
+            _connection?.Dispose();
         }
 
         private void MessageLoop() {
 
             _connection = _peerConnFactory.CreatePeerConnection(_metafile, this);
-            _connection.ConnectAsync().GetAwaiter().GetResult();
+            try {
+                _connection.ConnectAsync().GetAwaiter().GetResult();
+            } catch (SocketException e) {
+                // Connection failed
+                Log.Warn(e, $"Connection to {this} failed");
+                _connection.Dispose();
+                // TODO: Raise a new exception
+                return;
+            }
 
             //_connection.SendMessageAsync(new InterestedMessage()).GetAwaiter().GetResult();
 
+            // Keep-alive grace time is the minimum time to be waited after sending a keep-alive before it's possible to send another keep-alive
             var keepAliveGraceTimeStart = DateTime.Now;
 
             var wait = 0;
@@ -142,6 +153,11 @@ namespace Z1Torrent.PeerWire {
                 } catch (EndOfStreamException) {
                     // Stream was closed, connection has been closed
                     Log.Debug($"Connection to {this} closed");
+                    _mre.Set();
+                    break;
+                } catch (InactiveConnectionException) {
+                    // Connection was deemed inactive and was closed
+                    Log.Info($"Closed inactive connection to {this}");
                     _mre.Set();
                     break;
                 }

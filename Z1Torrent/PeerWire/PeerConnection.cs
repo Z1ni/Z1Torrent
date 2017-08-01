@@ -11,6 +11,8 @@ using Z1Torrent.PeerWire.Messages;
 
 namespace Z1Torrent.PeerWire {
 
+    public class InactiveConnectionException : Exception { }
+
     public class PeerConnection : IPeerConnection {
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
@@ -82,6 +84,7 @@ namespace Z1Torrent.PeerWire {
             }
             dataBuf.AddRange(packed);
             // TODO: Handle partial sends?
+            // TODO: Save sent byte amount for statistics and upload speed
             var dataToSend = dataBuf.ToArray();
             await _tcpClient.WriteBytesAsync(dataToSend, 0, dataToSend.Length);
             Log.Trace($"Sent {dataToSend.Length} bytes to {_peer}");
@@ -95,12 +98,16 @@ namespace Z1Torrent.PeerWire {
             return (T)await ReceiveMessageAsync();
         }
 
+        /// <summary>
+        /// Checks if there's available message and receives it. Will return after a short time if
+        /// there's no messages to be received.
+        /// </summary>
+        /// <returns><see cref="IMessage"/> or null if no message could be received</returns>
         public async Task<IMessage> ReceiveMessageAsync() {
             IMessage msg = null;
             
             // Receive data
             // Don't receive if buffer has data
-            // TODO: Have this in loop to ensure that at least something has been received?
             if (_dataBuffer.Count == 0) {
                 await ReceiveToBufferAsync();
                 if (_dataBuffer.Count == 0) {
@@ -111,8 +118,13 @@ namespace Z1Torrent.PeerWire {
 
             if (!_handshakeReceived) {
                 // This message must be a handshake
-                // TODO: Don't use potentially infinite loop here
+                var handshakeReceiveStart = DateTime.Now;
                 while (_dataBuffer.Count < 68) {
+                    if (DateTime.Now > handshakeReceiveStart + TimeSpan.FromSeconds(5)) {
+                        // Could not receive a handshake in 5 seconds, closing connection
+                        Disconnect();
+                        throw new InactiveConnectionException();
+                    }
                     // 68 bytes is the length of the BitTorrent protocol handshake
                     await ReceiveToBufferAsync();
                 }
@@ -126,7 +138,6 @@ namespace Z1Torrent.PeerWire {
                 return msg;
             }
 
-            // TODO: Parse more messages
             // Check that we have enough bytes buffered (4 is the size of the smallest message; keep-alive
             while (_dataBuffer.Count < 4) {
                 // Receive more data
@@ -144,8 +155,14 @@ namespace Z1Torrent.PeerWire {
                 return new KeepAliveMessage();
             }
 
+            var dataReceiveStartTime = DateTime.Now;
             while (_dataBuffer.Count < msgLen) {
                 // Receive more data
+                if (DateTime.Now > dataReceiveStartTime + TimeSpan.FromSeconds(10)) {
+                    // Could not receive a full message in 10 seconds, closing connection
+                    Disconnect();
+                    throw new InactiveConnectionException();
+                }
                 Log.Trace("Need more data, message ID/payload is missing");
                 await ReceiveToBufferAsync();
             }
@@ -243,6 +260,7 @@ namespace Z1Torrent.PeerWire {
         }
 
         private async Task ReceiveToBufferAsync() {
+            // TODO: Save received byte amount for statistics and download speed
             var buffer = new byte[2048];
             var received = await _tcpClient.ReadBytesAsync(buffer, 0, 2048);
             if (received == -1) {
@@ -271,6 +289,10 @@ namespace Z1Torrent.PeerWire {
             return buf;
         }
 
+        public void Dispose() {
+            _tcpClient?.Close();
+            _tcpClient?.Dispose();
+        }
     }
 
 }
