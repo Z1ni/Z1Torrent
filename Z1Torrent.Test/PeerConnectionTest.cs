@@ -280,6 +280,19 @@ namespace Z1Torrent.Test {
             var peerConn = peerConnFact.CreatePeerConnection(_torrentFile, new Peer(peerConnFact, _torrentFile, IPAddress.Loopback, 12345));
             await peerConn.ConnectAsync();
         }
+
+        [Fact]
+        public async Task Connection_SendsEvent() {
+            var peerConnFact = PeerConnectionMocker.CreatePeerConnectionFactoryWithResponse(_validHandshakeResponse);
+            var peerConn = peerConnFact.CreatePeerConnection(_torrentFile, new Peer(peerConnFact, _torrentFile, IPAddress.Loopback, 12345));
+
+            // Check that OnConnectionInitialized is raised
+            await Assert.RaisesAsync<EventArgs>(
+                h => peerConn.OnConnectionInitialized += h,
+                h => peerConn.OnConnectionInitialized -= h,
+                async () => await peerConn.ConnectAsync());
+        }
+
     }
 
 }

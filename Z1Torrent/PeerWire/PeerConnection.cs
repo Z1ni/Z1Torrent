@@ -12,6 +12,9 @@ using Z1Torrent.PeerWire.Messages;
 namespace Z1Torrent.PeerWire {
 
     public class InactiveConnectionException : Exception { }
+    public class PeerConnectionException : Exception {
+        public PeerConnectionException(string msg) : base(msg) { }
+    }
 
     public class PeerConnection : IPeerConnection {
 
@@ -32,6 +35,8 @@ namespace Z1Torrent.PeerWire {
         public DateTime LastMessageSentTime { get; private set; }
         public DateTime LastMessageReceivedTime { get; private set; }
 
+        public event EventHandler<EventArgs> OnConnectionInitialized;
+
         public PeerConnection(IConfig config, ITcpClient tcpClient, IMetafile meta, IPeer peer) {
             _config = config;
             _meta = meta;
@@ -49,18 +54,29 @@ namespace Z1Torrent.PeerWire {
             // Receive a handshake
             var theirHandshake = await ReceiveMessageAsync<HandshakeMessage>();
             Log.Debug($"Got handshake from {_peer}, reserved bytes: {BitConverter.ToString(theirHandshake.Reserved)}");
+
+            // Check infohash
+            if (!theirHandshake.Infohash.SequenceEqual(_meta.InfoHash)) {
+                // Different infohash!
+                throw new PeerConnectionException("Wrong infohash");
+            }
             
             // If peer supports extension protocol, send extended handshake
             if ((theirHandshake.Reserved[5] & 0x10) == 0x10) {
                 var extMsg = new ExtendedMessage(0, new ExtendedHandshakeMessage(clientNameVer: _config.ClientNameVersion));
                 await SendMessageAsync(extMsg);
             }
+
+            // TODO: Send Bitfield
+
+            // Invoke initialization event to let the subscriber(s) know that the connection is ready to use
+            OnConnectionInitialized?.Invoke(this, EventArgs.Empty);
         }
 
         public void Disconnect() {
             Log.Debug($"Disconnecting from {_peer}");
-            _tcpClient.Close();
-            _tcpClient.Dispose();
+            _tcpClient?.Close();
+            _tcpClient?.Dispose();
         }
 
         public async Task SendMessageAsync(IMessage message) {
@@ -290,8 +306,7 @@ namespace Z1Torrent.PeerWire {
         }
 
         public void Dispose() {
-            _tcpClient?.Close();
-            _tcpClient?.Dispose();
+            Disconnect();
         }
     }
 

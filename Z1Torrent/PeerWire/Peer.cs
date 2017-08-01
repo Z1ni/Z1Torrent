@@ -17,7 +17,7 @@ namespace Z1Torrent.PeerWire {
 
         private static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        public byte[] PeerId { get; }
+        public byte[] PeerId { get; private set; }
         public string ClientName { get; private set; }
         public IPAddress Address { get; }
         public short Port { get; }
@@ -34,6 +34,14 @@ namespace Z1Torrent.PeerWire {
         private IPeerConnection _connection;
         private ManualResetEvent _mre;
         private Thread _messageThread;
+
+        // Pass through
+        public event EventHandler<EventArgs> OnConnectionInitialized {
+            add => _connection.OnConnectionInitialized += value;
+            remove => _connection.OnConnectionInitialized -= value;
+        }
+
+        public event EventHandler<EventArgs> OnDisconnected;
 
         public Peer(IPeerConnectionFactory peerConnFactory, IMetafile meta, IPAddress address, short port) {
             Address = address;
@@ -110,13 +118,26 @@ namespace Z1Torrent.PeerWire {
             _connection = _peerConnFactory.CreatePeerConnection(_metafile, this);
             try {
                 _connection.ConnectAsync().GetAwaiter().GetResult();
+            } catch (PeerConnectionException e) {
+                // Peer connection was successful, but something else failed
+                // Maybe the peer sent a wrong infohash
+                Log.Warn(e, $"Connection to {this} was rejected");
+                _connection.Dispose();
+                // Fire an event
+                OnDisconnected?.Invoke(this, EventArgs.Empty);
+                return;
             } catch (SocketException e) {
                 // Connection failed
                 Log.Warn(e, $"Connection to {this} failed");
                 _connection.Dispose();
-                // TODO: Raise a new exception
+                // Fire an event
+                OnDisconnected?.Invoke(this, EventArgs.Empty);
                 return;
             }
+
+            // Handshake has been completed
+            PeerId = _connection.PeerHandshake.PeerId;
+            // TODO: Try to parse peer client name from the peer id
 
             //_connection.SendMessageAsync(new InterestedMessage()).GetAwaiter().GetResult();
 
@@ -232,6 +253,8 @@ namespace Z1Torrent.PeerWire {
             }
 
             Log.Debug($"Message loop for {this} stopped");
+
+            OnDisconnected?.Invoke(this, EventArgs.Empty);
         }
     }
 

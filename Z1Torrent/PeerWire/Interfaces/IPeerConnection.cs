@@ -19,7 +19,7 @@ namespace Z1Torrent.PeerWire.Interfaces {
         Task<T> ReceiveMessageAsync<T>() where T : IMessage;
         Task<IMessage> ReceiveMessageAsync();
 
-
+        event EventHandler<EventArgs> OnConnectionInitialized;
     }
 
 }
